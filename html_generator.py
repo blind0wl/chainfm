@@ -249,6 +249,12 @@ class HTMLGenerator:
             top: 0;
             z-index: 10;
         }
+        /* Sortable header indicators */
+    #playerTable th.sortable { cursor: pointer; }
+    #playerTable th.sortable:hover { background-color: #3b5168; }
+    /* Use literal symbols to avoid Python string escape issues */
+    #playerTable th.sort-asc::after { content: " ▲"; font-size: 10px; margin-left: 4px; }
+    #playerTable th.sort-desc::after { content: " ▼"; font-size: 10px; margin-left: 4px; }
         
         #playerTable td {
             padding: 6px 6px;
@@ -394,6 +400,126 @@ class HTMLGenerator:
             }
         });
 
+        // ---------- Sorting utilities ----------
+        function parseNumberLike(text) {
+            if (text == null) return NaN;
+            let t = String(text).trim().toUpperCase();
+            if (!t) return NaN;
+            // Remove currency, commas and percent
+            t = t.replace(/[£$,%\s]/g, '');
+            // Handle ranges like "12-14" by taking the average
+            if (/^-?\d+(?:\.\d+)?\s*[-–]\s*-?\d+(?:\.\d+)?$/.test(t)) {
+                const parts = t.split(/[-–]/).map(s => parseFloat(s));
+                if (!isNaN(parts[0]) && !isNaN(parts[1])) return (parts[0] + parts[1]) / 2;
+            }
+            // Suffixes K/M/B
+            const m = t.match(/^(-?\d+(?:\.\d+)?)([KMB])?$/);
+            if (m) {
+                let n = parseFloat(m[1]);
+                const suf = m[2];
+                if (suf === 'K') n *= 1e3;
+                else if (suf === 'M') n *= 1e6;
+                else if (suf === 'B') n *= 1e9;
+                return n;
+            }
+            // Fallback: just parseFloat beginning of string
+            const n = parseFloat(t);
+            return isNaN(n) ? NaN : n;
+        }
+
+        function getCellText(row, idx) {
+            if (!row) return '';
+            const cell = row.cells[idx];
+            if (!cell) return '';
+            return (cell.textContent || cell.innerText || '').trim();
+        }
+
+        function detectNumericColumn(table, colIndex) {
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            let seen = 0, numeric = 0;
+            for (let i = 0; i < rows.length && seen < 30; i++) {
+                const txt = getCellText(rows[i], colIndex);
+                if (txt !== '') {
+                    seen++;
+                    const val = parseNumberLike(txt);
+                    if (!isNaN(val)) numeric++;
+                }
+            }
+            return numeric > 0 && numeric >= Math.max(1, Math.floor(seen * 0.6));
+        }
+
+        function sortTableByColumn(table, colIndex, desc) {
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const isNumeric = detectNumericColumn(table, colIndex);
+            const withIndex = rows.map((row, i) => ({ row, i }));
+
+            withIndex.sort((a, b) => {
+                const ta = getCellText(a.row, colIndex);
+                const tb = getCellText(b.row, colIndex);
+                if (isNumeric) {
+                    const va = parseNumberLike(ta);
+                    const vb = parseNumberLike(tb);
+                    const aNaN = isNaN(va), bNaN = isNaN(vb);
+                    if (aNaN && bNaN) return a.i - b.i; // stable
+                    if (aNaN) return 1; // NaN to bottom
+                    if (bNaN) return -1;
+                    return va === vb ? (a.i - b.i) : (va - vb);
+                } else {
+                    const sa = ta.toLowerCase();
+                    const sb = tb.toLowerCase();
+                    const cmp = sa.localeCompare(sb);
+                    return cmp === 0 ? (a.i - b.i) : cmp;
+                }
+            });
+
+            if (desc) withIndex.reverse();
+            // Reattach in sorted order
+            withIndex.forEach(w => tbody.appendChild(w.row));
+        }
+
+        function clearSortIndicators(table) {
+            table.querySelectorAll('thead th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+        }
+
+        function initSorting() {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            const headers = table.querySelectorAll('thead th');
+            headers.forEach((th, idx) => {
+                th.classList.add('sortable');
+                th.addEventListener('click', function() {
+                    const currentlyAsc = th.classList.contains('sort-asc');
+                    const currentlyDesc = th.classList.contains('sort-desc');
+                    const nextDesc = currentlyAsc && !currentlyDesc ? true : !currentlyDesc ? false : false; // toggle asc->desc, unsorted->asc, desc->asc
+                    // Determine direction: cycles asc -> desc -> asc
+                    const desc = currentlyAsc ? true : (currentlyDesc ? false : false);
+                    // Apply sort
+                    sortTableByColumn(table, idx, desc);
+                    // Update indicators
+                    clearSortIndicators(table);
+                    th.classList.add(desc ? 'sort-desc' : 'sort-asc');
+                });
+            });
+        }
+
+        function defaultSortByHeaderName(name, desc){
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            const idxMap = headerIndex();
+            const key = String(name || '').trim().toUpperCase();
+            const indices = idxMap[key];
+            if (!indices || indices.length === 0) return;
+            const colIndex = Array.isArray(indices) ? indices[0] : indices;
+            sortTableByColumn(table, colIndex, !!desc);
+            clearSortIndicators(table);
+            const th = table.querySelectorAll('thead th')[colIndex];
+            if (th) th.classList.add(desc ? 'sort-desc' : 'sort-asc');
+        }
+
         // External toggle for legend
         function toggleLegendExternal(extBtn) {
             const legend = document.querySelector('.legend');
@@ -402,6 +528,12 @@ class HTMLGenerator:
             legend.style.display = isHidden ? 'block' : 'none';
             if (extBtn) extBtn.textContent = isHidden ? 'Hide legend' : 'Show legend';
         }
+
+        // Initialize sorting and best formations functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            try { initSorting(); } catch (e) { console && console.error && console.error('Sorting init error:', e); }
+            try { defaultSortByHeaderName('Best Score', true); } catch (e) { console && console.error && console.error('Default sort error:', e); }
+        });
 
         // Best formations functionality
         function toggleBestFormations(){
