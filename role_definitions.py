@@ -180,9 +180,9 @@ FULL_ROLE_DESCRIPTIONS = {
     'PFD': 'Pressing Forward Defend',
     'PFS': 'Pressing Forward Support',
     'PFA': 'Pressing Forward Attack',
-    'TFS': 'Trequartista Support',
-    'TFA': 'Trequartista Attack',
-    'TREA': 'Trequartista (Role)',
+    'TFS': 'Target Forward Support',
+    'TFA': 'Target Forward Attack',
+    'TREA': 'Trequartista Attack',
     'FB': 'Full Back Composite',
     'CB': 'Centre Back Composite',
 }

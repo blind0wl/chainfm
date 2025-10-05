@@ -14,6 +14,15 @@ from role_definitions import ROLE_DISPLAY_NAMES, FULL_ROLE_DESCRIPTIONS
 
 logger = logging.getLogger(__name__)
 
+POSITION_ROLE_GROUPS = {
+    "Attacking Midfielder (Central)": ["AMA", "AMS", "APA", "APS", "TFS", "TFA", "TREA", "SSA"],
+    "Striker": ["DLFA", "DLFS", "DLPD", "DLPS", "AFA", "TFA", "TFS", "PA", "CFA", "CFS", "PFD", "PFS", "PFA", "TFEA", "F9S"],
+    "Midfield (Central)": ["CMA", "CMD", "CMS", "DLPD", "DLPS", "B2BS", "APA", "APS", "BWMD", "BWMS", "RPS", "MEZS", "MEZA", "CARS"],
+    "Defender (Left/Right)": ["FBA", "FBD", "FBS", "WBD", "WBS", "WBA", "NFBD", "CWBA", "CWBS", "IWBD", "IWBS", "IWBA", "IFBD", "IFBS"],
+    "Defender (Central)": ["CDC", "CDD", "CDS", "LD", "LS", "BPDC", "BPDD", "BPDS", "NCBD", "NCBS", "NCBC", "WCBD", "WCBS", "WCBA"],
+    "Goalkeeper": ["GKD", "SKD", "SKS", "SKA"]
+}
+
 
 class HTMLGenerator:
     """Generates interactive HTML reports for FM player analysis."""
@@ -116,52 +125,35 @@ class HTMLGenerator:
         )
     
     def _generate_legend_html(self, display_df: pd.DataFrame) -> str:
-        """Generate the role legend HTML."""
-        
-        # Find role codes present in the table
-        present_codes = []
+        """Generate the grouped role legend HTML."""
+        present_codes = set()
         for orig_key, short in ROLE_DISPLAY_NAMES.items():
-            if orig_key.islower() and orig_key != 'str':  # Exclude composite metrics
-                code = short.upper()
-                # Include if column exists in display table
-                if (code in display_df.columns or 
-                    orig_key in display_df.columns or 
-                    short in display_df.columns):
-                    present_codes.append(code)
-        
-        # Remove duplicates while preserving order
-        present_codes = list(dict.fromkeys(present_codes))
-        
-        if not present_codes:
+            code = short.upper()
+            if code in display_df.columns or orig_key in display_df.columns or short in display_df.columns:
+                present_codes.add(code)
+        group_html = []
+        for group, codes in POSITION_ROLE_GROUPS.items():
+            codes_in_table = [c for c in codes if c in present_codes]
+            if not codes_in_table:
+                continue
+            items = []
+            for code in codes_in_table:
+                desc = FULL_ROLE_DESCRIPTIONS.get(code, code)
+                items.append(f'<div class="legend-row clickable" data-code="{code}" data-active="1" onclick="legendToggleRole(this)"><code>{code}</code> &nbsp;&rarr;&nbsp; <strong>{desc}</strong></div>')
+            group_html.append(f'<div class="legend-group" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:8px;"><strong>{group}</strong><button class="legend-toggle" onclick="enableRoleGroup(\'{group}\')">Show all</button><button class="legend-toggle" onclick="disableRoleGroup(\'{group}\')">Hide all</button></div><div style="margin-left:12px;">' + ''.join(items) + '</div></div>')
+        if not group_html:
             return '<div class="legend" style="margin-bottom:6px; font-size:11px; color:#666;">Legend not available</div>'
-        
-        # Build role pairs with descriptions
-        role_pairs = self._build_role_pairs(present_codes)
-        
-        # Split into two columns for better layout
-        half = (len(role_pairs) + 1) // 2
-        left_pairs = role_pairs[:half]
-        right_pairs = role_pairs[half:]
-        
-        left_html = self._generate_legend_column(left_pairs)
-        right_html = self._generate_legend_column(right_pairs)
-        
-        legend_html = f"""
-            <div class="legend" style="margin-bottom:6px; display:none;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <strong>Role legend</strong>
-                    <div class="legend-controls" style="margin-left:12px; display:flex; gap:8px;">
-                        <button class="legend-toggle" onclick="disableAllRoles()">Disable all</button>
-                        <button class="legend-toggle" onclick="enableAllRoles()">Enable all</button>
-                    </div>
-                </div>
-                <div style="display:flex; gap:12px; margin-top:6px;">
-                    <div style="flex:1">{left_html}</div>
-                    <div style="flex:1">{right_html}</div>
-                </div>
-            </div>
-        """
-        
+        legend_html = f'<div class="legend" style="margin-bottom:6px; display:none;">'
+        legend_html += '<div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">'
+        legend_html += '<button class="legend-toggle" onclick="enableAllRoles()">Show All</button>'
+        legend_html += '<button class="legend-toggle" onclick="disableAllRoles()">Hide All</button>'
+        legend_html += '</div>'
+        legend_html += '<div style="display:flex; flex-wrap:wrap; gap:24px;">'
+        for group_html_block in group_html:
+            # Replace Show all/Hide all with Show/Hide
+            group_html_block = group_html_block.replace('Show all', 'Show').replace('Hide all', 'Hide')
+            legend_html += f'<div style="flex:1 1 320px; min-width:220px;">{group_html_block}</div>'
+        legend_html += '</div></div>'
         return legend_html
     
     def _build_role_pairs(self, present_codes: List[str]) -> List[Tuple[str, str]]:
@@ -630,6 +622,28 @@ class HTMLGenerator:
                 updateLegendRowState(row, true);
             });
         }
+
+        // Group show/hide logic
+        function enableRoleGroup(group) {
+            const codes = POSITION_ROLE_GROUPS[group];
+            if (!codes) return;
+            codes.forEach(function(code) {
+                setColumnVisibilityByCode(code, true);
+                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {
+                    updateLegendRowState(row, true);
+                });
+            });
+        }
+        function disableRoleGroup(group) {
+            const codes = POSITION_ROLE_GROUPS[group];
+            if (!codes) return;
+            codes.forEach(function(code) {
+                setColumnVisibilityByCode(code, false);
+                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {
+                    updateLegendRowState(row, false);
+                });
+            });
+        }
         """
     
     def _generate_formation_analyzer(self) -> str:
@@ -722,6 +736,7 @@ ST C – Poacher (A)
         formation_content = self._generate_formation_analyzer()
         
         role_titles_json = json.dumps(FULL_ROLE_DESCRIPTIONS)
+        position_role_groups_json = json.dumps(POSITION_ROLE_GROUPS)
         html_template = f"""
 <!DOCTYPE html>
 <html>
@@ -729,7 +744,6 @@ ST C – Poacher (A)
     <title>FM Player Analysis</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <style>
         {css_styles}
     </style>
@@ -765,15 +779,34 @@ ST C – Poacher (A)
     
     <!-- Legend inserted here -->
     {legend_html}
-
-    <div class="table-container">
-        {table_html}
-    </div>
-    
+    <div class="table-container">{table_html}</div>
     <script>
         // Map of role codes to full names for header tooltips
         const ROLE_TITLES = {role_titles_json};
+        // Position to role group mapping for legend controls
+        const POSITION_ROLE_GROUPS = {position_role_groups_json};
         {javascript}
+        // Group show/hide logic
+        function enableRoleGroup(group) {{
+            const codes = POSITION_ROLE_GROUPS[group];
+            if (!codes) return;
+            codes.forEach(function(code) {{
+                setColumnVisibilityByCode(code, true);
+                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {{
+                    updateLegendRowState(row, true);
+                }});
+            }});
+        }}
+        function disableRoleGroup(group) {{
+            const codes = POSITION_ROLE_GROUPS[group];
+            if (!codes) return;
+            codes.forEach(function(code) {{
+                setColumnVisibilityByCode(code, false);
+                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {{
+                    updateLegendRowState(row, false);
+                }});
+            }});
+        }}
     </script>
 </body>
 </html>
