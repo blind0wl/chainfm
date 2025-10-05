@@ -6,6 +6,7 @@ JavaScript functionality, and data visualization.
 """
 
 import pandas as pd
+import json
 from typing import Dict, List, Tuple
 import logging
 
@@ -532,6 +533,8 @@ class HTMLGenerator:
         // Initialize sorting and best formations functionality
         document.addEventListener('DOMContentLoaded', function() {
             try { initSorting(); } catch (e) { console && console.error && console.error('Sorting init error:', e); }
+            // Apply role tooltips on headers
+            try { applyRoleHeaderTooltips(); } catch (e) { console && console.error && console.error('Header tooltip error:', e); }
             try { defaultSortByHeaderName('Best Score', true); } catch (e) { console && console.error && console.error('Default sort error:', e); }
         });
 
@@ -541,6 +544,23 @@ class HTMLGenerator:
             if (!p) return;
             const isHidden = window.getComputedStyle(p).display === 'none';
             p.style.display = isHidden ? 'block' : 'none';
+        }
+        
+        // Role header tooltips
+        function applyRoleHeaderTooltips(){
+            try {
+                const table = document.getElementById('playerTable');
+                if (!table || typeof ROLE_TITLES !== 'object') return;
+                const headers = table.querySelectorAll('thead th');
+                headers.forEach(th => {
+                    const key = (th.textContent || '').trim().toUpperCase();
+                    if (ROLE_TITLES[key]) {
+                        th.title = ROLE_TITLES[key];
+                    }
+                });
+            } catch (e) {
+                console && console.warn && console.warn('Tooltip application failed', e);
+            }
         }
 
         function headerIndex(){
@@ -701,6 +721,7 @@ ST C – Poacher (A)
         javascript = self._generate_javascript()
         formation_content = self._generate_formation_analyzer()
         
+        role_titles_json = json.dumps(FULL_ROLE_DESCRIPTIONS)
         html_template = f"""
 <!DOCTYPE html>
 <html>
@@ -750,6 +771,8 @@ ST C – Poacher (A)
     </div>
     
     <script>
+        // Map of role codes to full names for header tooltips
+        const ROLE_TITLES = {role_titles_json};
         {javascript}
     </script>
 </body>
