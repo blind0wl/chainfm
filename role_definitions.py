@@ -166,7 +166,7 @@ FULL_ROLE_DESCRIPTIONS = {
     'RPS': 'Roaming Playmaker Support',
     'SVS': 'Supportive Role Support',
     'SVA': 'Supportive Role Attack',
-    'SSA': 'Secondary Striker Attack',
+    'SSA': 'Shadow Striker Attack',
     'WMD': 'Wide Midfielder Defend',
     'WMS': 'Wide Midfielder Support',
     'WMA': 'Wide Midfielder Attack',
