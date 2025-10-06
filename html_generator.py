@@ -81,12 +81,38 @@ class HTMLGenerator:
         # Generate components
         table_html = self._generate_table_html(display_df)
         legend_html = self._generate_legend_html(display_df)
+
+        # Add position filter buttons above the table
+        position_filters_html = self._generate_position_filters_html()
         
         # Combine into full HTML document
-        html_content = self._generate_full_html(table_html, legend_html)
+        html_content = self._generate_full_html(position_filters_html + table_html, legend_html)
         
         logger.info("HTML report generated successfully")
         return html_content
+    def _generate_position_filters_html(self) -> str:
+        """Generate HTML for position filter buttons above the table."""
+        # Position definitions and display names
+        positions = [
+            ("GK", "Goalkeeper"),
+            ("DL", "DL / WB (L)"),
+            ("DC", "DC"),
+            ("DR", "DR / WB (R)"),
+            ("DM", "DM"),
+            ("ML", "ML"),
+            ("MC", "MC"),
+            ("MR", "MR"),
+            ("AML", "AML"),
+            ("AMC", "AMC"),
+            ("AMR", "AMR"),
+            ("ST", "ST")
+        ]
+        html = ['<div class="controls" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center;">']
+        for code, label in positions:
+            html.append(f'<button class="position-filter" onclick="filterByPositionBtn(this, \'{code}\')">{label}</button>')
+        html.append('<button class="position-filter" style="background:#aaa;color:#fff;" onclick="clearFilters(this)">Clear</button>')
+        html.append('</div>')
+        return ''.join(html)
     
     def _prepare_display_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         """Prepare DataFrame for display with proper column ordering and naming."""
@@ -340,28 +366,82 @@ class HTMLGenerator:
     def _generate_javascript(self) -> str:
         """Generate JavaScript functionality for the HTML report."""
         return """
-        // Simple filtering without DataTables
-        function filterByPosition(btn, position) {
-            // reset active state
+        // Position filter logic for FM report
+        function filterByPositionBtn(btn, position) {
             document.querySelectorAll('.position-filter').forEach(b => b.classList.remove('active'));
             if (btn && btn.classList) btn.classList.add('active');
-
             const rows = document.querySelectorAll('#playerTable tbody tr');
             rows.forEach(row => {
                 const positionCell = row.cells[3]; // Position is 4th column (index 3)
                 if (!positionCell) return;
                 let posText = (positionCell.textContent || positionCell.innerText || '').toUpperCase().trim();
-                posText = posText.replace(/[^A-Z0-9]/g, ' ').trim();
-                const tokens = posText.split(/\\s+/);
+                // Split by comma, slash, and handle parenthesis
+                let positions = [];
+                // Split by comma first, then process each part
+                posText.split(',').forEach(part => {
+                    part = part.trim();
+                    // Handle compound bases like D/WB/M (L)
+                    let matchCompound = part.match(/^([A-Z/]+)\s*(\((.*?)\))?/);
+                    if (matchCompound) {
+                        let bases = matchCompound[1].split('/').map(b => b.trim()).filter(Boolean);
+                        let sides = matchCompound[3] ? matchCompound[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
+                        bases.forEach(base => {
+                            positions.push({base, sides});
+                        });
+                    } else {
+                        // Also handle cases like DM (no side)
+                        let m = part.match(/^([A-Z]+)\s*(\((.*?)\))?/);
+                        if (m) {
+                            let base = m[1];
+                            let sides = m[3] ? m[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
+                            positions.push({base, sides});
+                        }
+                    }
+                });
                 let match = false;
-                if (position === 'GK') {
-                    match = tokens.includes('GK');
-                } else if (position === 'D') {
-                    match = tokens.some(t => t.startsWith('D') && t !== 'DM');
-                } else if (position === 'M') {
-                    match = tokens.includes('DM') || tokens.some(t => t.startsWith('M')) || tokens.some(t => t.startsWith('AM'));
-                } else if (position === 'F') {
-                    match = tokens.some(t => t.includes('ST'));
+                function sideMatch(sides, targets) {
+                    // Match if any target is contained in any side
+                    return sides.some(side => targets.some(t => side.includes(t)));
+                }
+                switch (position) {
+                    case 'GK':
+                        match = positions.some(p => p.base === 'GK');
+                        break;
+                    case 'DL':
+                        match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['L']));
+                        break;
+                    case 'DC':
+                        match = positions.some(p => p.base === 'D' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                        break;
+                    case 'DR':
+                        match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['R']));
+                        break;
+                    case 'DM':
+                        match = positions.some(p => p.base === 'DM');
+                        break;
+                    case 'ML':
+                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['L']));
+                        break;
+                    case 'MC':
+                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                        break;
+                    case 'MR':
+                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['R']));
+                        break;
+                    case 'AML':
+                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['L']));
+                        break;
+                    case 'AMC':
+                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                        break;
+                    case 'AMR':
+                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['R']));
+                        break;
+                    case 'ST':
+                        match = positions.some(p => p.base === 'ST');
+                        break;
+                    default:
+                        match = false;
                 }
                 row.style.display = match ? '' : 'none';
             });
