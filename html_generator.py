@@ -756,6 +756,92 @@ class HTMLGenerator:
         }
 
         // Best formations computation
+        // Role name mapping from formation specs to table column codes
+        const ROLE_NAME_TO_CODE = {
+            // Goalkeepers
+            'Goalkeeper (D)': 'GKD',
+            'Sweeper Keeper (S)': 'SKS',
+            'Sweeper Keeper (A)': 'SKA',
+            
+            // Defenders
+            'Full Back (S)': 'FBS',
+            'Full Back (D)': 'FBD',
+            'Full Back (A)': 'FBA',
+            'Wing Back (S)': 'WBS',
+            'Wing Back (D)': 'WBD',
+            'Wing Back (A)': 'WBA',
+            'Central Defender (D)': 'CDD',
+            'Central Defender (C)': 'CDC',
+            'Central Defender (S)': 'CDS',
+            'Central Def (D)': 'CDD',
+            'Central Def (C)': 'CDC',
+            'Ball-Playing Def (D)': 'BPDD',
+            'Ball-Playing Def (S)': 'BPDS',
+            'Ball-Playing Def (C)': 'BPDC',
+            'Wide Centre-Back (S)': 'WCBS',
+            'Wide Centre-Back (D)': 'WCBD',
+            'Wide Centre-Back (A)': 'WCBA',
+            
+            // Defensive Midfielders
+            'Def Mid (D)': 'DMD',
+            'Def Mid (S)': 'DMS',
+            'Deep-Lying Playmaker (S)': 'DLPS',
+            'Deep-Lying Playmaker (D)': 'DLPD',
+            'Ball-Winning Mid (D)': 'BWMD',
+            'Ball-Winning Mid (S)': 'BWMS',
+            'Anchor Man (D)': 'AD',
+            'Half Back (D)': 'HBD',
+            
+            // Central Midfielders
+            'Box-to-Box Mid (S)': 'B2BS',
+            'Central Mid (S)': 'CMS',
+            'Central Mid (D)': 'CMD',
+            'Central Mid (A)': 'CMA',
+            'Advanced Playmaker (S)': 'APS',
+            'Advanced Playmaker (A)': 'APA',
+            'Mezzala (S)': 'MEZS',
+            'Mezzala (A)': 'MEZA',
+            'Carrilero (S)': 'CARS',
+            'Regista (S)': 'REGS',
+            'Roaming Playmaker (S)': 'RPS',
+            
+            // Wide Midfielders
+            'Winger (S)': 'WS',
+            'Winger (A)': 'WA',
+            'Wide Mid (S)': 'WMS',
+            'Wide Mid (D)': 'WMD',
+            'Wide Mid (A)': 'WMA',
+            'Inside Forward (A)': 'IFA',
+            'Inside Forward (S)': 'IFS',
+            'Inverted Winger (A)': 'IWA',
+            'Inverted Winger (S)': 'IWS',
+            'Wide Playmaker (S)': 'WPS',
+            'Wide Playmaker (A)': 'WPA',
+            
+            // Attacking Midfielders
+            'Att Mid (S)': 'AMS',
+            'Att Mid (A)': 'AMA',
+            'Attacking Mid (S)': 'AMS',
+            'Attacking Mid (A)': 'AMA',
+            'Trequartista (A)': 'TREA',
+            'Enganche (S)': 'ENGS',
+            'Shadow Striker (A)': 'SSA',
+            
+            // Forwards
+            'Advanced Forward (A)': 'AFA',
+            'Target Forward (S)': 'TFS',
+            'Target Forward (A)': 'TFA',
+            'Deep-Lying Forward (S)': 'DLFS',
+            'Deep-Lying Forward (A)': 'DLFA',
+            'Complete Forward (S)': 'CFS',
+            'Complete Forward (A)': 'CFA',
+            'Pressing Forward (A)': 'PFA',
+            'Pressing Forward (S)': 'PFS',
+            'Pressing Forward (D)': 'PFD',
+            'Poacher (A)': 'PA',
+            'False Nine (S)': 'F9S'
+        };
+
         function computeTopFormations() {
             const resultsDiv = document.getElementById('bestFormationsResults');
             const specTextarea = document.getElementById('formationSpec');
@@ -841,6 +927,8 @@ class HTMLGenerator:
                     const pos = row.cells[posIdx]?.textContent?.trim() || '';
                     
                     const scores = {};
+
+                    
                     headers.forEach((header, idx) => {
                         const headerText = header.textContent.trim();
                         // Skip non-role columns (name, position, age, club, etc.)
@@ -852,6 +940,7 @@ class HTMLGenerator:
                             const score = parseFloat(cellText);
                             if (!isNaN(score)) {
                                 scores[headerText] = score;
+
                             }
                         }
                     });
@@ -867,6 +956,8 @@ class HTMLGenerator:
             const results = [];
             
             formations.forEach(formation => {
+
+                
                 // Use proper assignment algorithm to avoid duplicates
                 const assignment = assignPlayersToFormation(formation, players);
                 
@@ -968,8 +1059,9 @@ class HTMLGenerator:
             players.forEach(player => {
                 const eligible = isPlayerEligibleForPosition(player, formationPos);
                 if (eligible) {
-                    let score = player.scores[role] || calculateDefaultScore(player, role);
+                    let score = getPlayerRoleScore(player, role);
                     
+
                     
                     if (score > bestScore) {
                         bestScore = score;
@@ -1062,9 +1154,72 @@ class HTMLGenerator:
             return roleMatches && sideMatches;
         }
         
+        function getPlayerRoleScore(player, formationRole) {
+            // Try exact match first (in case formation role is already a code)
+            if (player.scores[formationRole] !== undefined) {
+
+                return player.scores[formationRole];
+            }
+            
+            // Try mapped code
+            const code = ROLE_NAME_TO_CODE[formationRole];
+            if (code && player.scores[code] !== undefined) {
+
+                return player.scores[code];
+            }
+            
+            // No direct match found, use position-relevant scoring
+
+            return calculatePositionRelevantScore(player, formationRole);
+        }
+        
+        function calculatePositionRelevantScore(player, formationRole) {
+            // Group roles by position type for more relevant averaging
+            const positionGroups = {
+                'goalkeeper': ['GKD', 'SKS', 'SKA', 'SKD'],
+                'defender': ['FBD', 'FBS', 'FBA', 'WBD', 'WBS', 'WBA', 'CDD', 'CDC', 'CDS', 'BPDD', 'BPDS', 'BPDC', 'WCBD', 'WCBS', 'WCBA', 'LD', 'LS'],
+                'defensiveMid': ['DMD', 'DMS', 'DLPD', 'DLPS', 'BWMD', 'BWMS', 'AD', 'HBD', 'REGS'],
+                'centralMid': ['CMS', 'CMD', 'CMA', 'B2BS', 'APS', 'APA', 'MEZS', 'MEZA', 'CARS', 'RPS'],
+                'wideMid': ['WS', 'WA', 'WMS', 'WMD', 'WMA', 'IFA', 'IFS', 'IWA', 'IWS', 'WPS', 'WPA'],
+                'attackingMid': ['AMS', 'AMA', 'TREA', 'ENGS', 'SSA'],
+                'forward': ['AFA', 'TFS', 'TFA', 'DLFS', 'DLFA', 'CFS', 'CFA', 'PFA', 'PFS', 'PFD', 'PA', 'F9S']
+            };
+            
+            // Determine which group this role belongs to
+            const code = ROLE_NAME_TO_CODE[formationRole];
+            let relevantGroup = null;
+            
+            for (const [groupName, roles] of Object.entries(positionGroups)) {
+                if (code && roles.includes(code)) {
+                    relevantGroup = roles;
+                    break;
+                }
+            }
+            
+            if (relevantGroup) {
+                // Average only scores from the same position group
+                const relevantScores = relevantGroup
+                    .map(role => player.scores[role])
+                    .filter(score => score !== undefined);
+                
+                if (relevantScores.length > 0) {
+                    const average = relevantScores.reduce((a, b) => a + b, 0) / relevantScores.length;
+
+                    return average;
+                }
+            }
+            
+            // Fallback to overall average
+            const allScores = Object.values(player.scores);
+            const average = allScores.length > 0 ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+
+            return average;
+        }
+        
         function calculateDefaultScore(player, role) {
             const scores = Object.values(player.scores);
             const average = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+
             return average;
         }
         
@@ -1107,84 +1262,64 @@ class HTMLGenerator:
         return js
     
     def _generate_formation_analyzer(self) -> str:
-        # Generate formation analysis textarea content.
+        # Generate formation analysis textarea content from external file.
+        try:
+            # Try to load formations from external file
+            import os
+            formations_file = os.path.join(os.path.dirname(__file__), 'formations.txt')
+            
+            if os.path.exists(formations_file):
+                with open(formations_file, 'r', encoding='utf-8') as f:
+                    return f.read()
+            else:
+                # Fallback to built-in formations if file doesn't exist
+                logger.warning("formations.txt not found, using built-in formations")
+                return self._get_fallback_formations()
+                
+        except Exception as e:
+            logger.error(f"Error loading formations file: {e}, using fallback")
+            return self._get_fallback_formations()
+    
+    def _get_fallback_formations(self) -> str:
+        # Fallback formations if external file is not available
         return """1. 4-4-2
-GK – Goalkeeper (D)
-D R – Full Back (S)
-DC – Central Defender (D)
-DC – Central Defender (D)
-D L – Full Back (S)
-M R – Winger (S)
-MC – Box-to-Box Mid (S)
-MC – Ball-Winning Mid (D)
-M L – Winger (A)
-ST C – Advanced Forward (A)
-ST C – Deep-Lying Forward (S)
+GK = GKD
+D (L) = FBS
+D (C) = CDD
+D (C) = CDD
+D (R) = FBS
+M (R) = WS
+M (C) = B2BS
+M (C) = BWMD
+M (L) = WA
+ST (C) = AFA
+ST (C) = DLFS
 
 2. 4-2-3-1 Wide
-GK – Sweeper Keeper (S)
-D/WB R – Wing Back (S)
-DC – Ball-Playing Def (D)
-DC – Central Def (D)
-D/WB L – Wing Back (S)
-DM – Deep-Lying Playmaker (S)
-DM – Def Mid (D)
-AM R – Inside Forward (A)
-AMC – Att Mid (S)
-AM L – Winger (A)
-ST C – Pressing Forward (A)
+GK = SKS
+D/WB (R) = WBS
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+DM = DLPS
+DM = DMD
+AM (R) = IFA
+AM (C) = AMS
+AM (L) = WA
+ST (C) = PFA
 
 3. 4-3-3 DM Wide
-GK – Sweeper Keeper (S)
-D/WB R – Wing Back (S)
-DC – Central Def (D)
-DC – Central Def (D)
-D/WB L – Wing Back (S)
-DM – Anchor Man (D)
-MC – Box-to-Box Mid (S)
-MC – Advanced Playmaker (S)
-AM R – Inside Forward (A)
-AM L – Winger (A)
-ST C – Advanced Forward (A)
-
-4. 4-1-2-1-2 Narrow (Diamond)
-GK – Goalkeeper (D)
-D R – Full Back (S)
-DC – Central Def (D)
-DC – Central Def (D)
-D L – Full Back (S)
-DM – Def Mid (D)
-MC – Box-to-Box Mid (S)
-MC – Mezzala (S)
-AMC – Advanced Playmaker (A)
-ST C – Poacher (A)
-ST C – Deep-Lying Forward (S)
-
-5. 3-5-2
-GK – Sweeper Keeper (S)
-DC – Wide Centre-Back (S)
-DC – Central Def (D)
-DC – Wide Centre-Back (S)
-D/WB R – Wing Back (S)
-D/WB L – Wing Back (S)
-MC – Ball-Winning Mid (D)
-MC – Deep-Lying Playmaker (S)
-MC – Mezzala (S)
-ST C – Pressing Forward (A)
-ST C – Target Forward (S)
-
-6. 5-3-2 WB
-GK – Sweeper Keeper (S)
-D/WB R – Wing Back (S)
-DC – Central Def (D)
-DC – Ball-Playing Def (D)
-DC – Central Def (D)
-D/WB L – Wing Back (S)
-MC – Box-to-Box Mid (S)
-MC – Deep-Lying Playmaker (S)
-MC – Ball-Winning Mid (D)
-ST C – Target Forward (S)
-ST C – Poacher (A)"""
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+DM = AD
+M (C) = B2BS
+M (C) = APS
+AM (R) = IFA
+AM (L) = WA
+ST (C) = AFA"""
         
     def _generate_full_html(self, table_html: str, legend_html: str) -> str:
     # Generate the complete HTML document.

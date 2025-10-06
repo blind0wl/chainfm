@@ -1,0 +1,519 @@
+1. 4-4-2
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (R) = WS
+M (C) = B2BS
+M (C) = BWMD
+M (L) = WA
+ST (C) = AFA
+ST (C) = DLFS
+
+2. 4-2-3-1 Wide
+GK = SKS
+D/WB (R) = WBS
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+DM = DLPS
+DM = DMD
+AM (R) = IFA
+AM (C) = AMS
+AM (L) = WA
+ST (C) = PFA
+
+3. 4-3-3 DM Wide
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+DM = AD
+M (C) = B2BS
+M (C) = APS
+AM (R) = IFA
+AM (L) = WA
+ST (C) = AFA
+
+4. 4-1-2-1-2 Narrow (Diamond)
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+M (C) = B2BS
+M (C) = MEZS
+AM (C) = APA
+ST (C) = PA
+ST (C) = DLFS
+
+5. 3-5-2
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (C) = BWMD
+M (C) = DLPS
+M (C) = MEZS
+ST (C) = PFA
+ST (C) = TFS
+
+6. 5-3-2 WB
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+M (C) = BWMD
+ST (C) = TFS
+ST (C) = PA
+
+7. 4-4-1-1
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (R) = WS
+M (C) = B2BS
+M (C) = BWMD
+M (L) = WA
+AM (C) = SSA
+ST (C) = PFA
+
+8. 4-3-3 Attacking
+GK = SKS
+D/WB (R) = WBA
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBA
+M (C) = BWMD
+M (C) = B2BS
+M (C) = APS
+AM (R) = IFA
+AM (L) = WA
+ST (C) = CFA
+
+9. 4-5-1 Flat
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (R) = WS
+M (C) = BWMD
+M (C) = B2BS
+M (C) = APS
+M (L) = WA
+ST (C) = PFA
+
+10. 4-2-4
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = BWMS
+M (C) = APA
+AM (R) = WA
+AM (L) = IFA
+ST (C) = PA
+ST (C) = DLFS
+
+11. 4-1-4-1 DM Wide
+GK = SKS
+D (R) = FBS
+D (C) = BPDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+M (R) = WS
+M (C) = B2BS
+M (C) = MEZS
+M (L) = WA
+ST (C) = PFA
+
+12. 3-4-1-2
+GK = SKS
+D (C) = CDD
+D (C) = CDD
+D (C) = CDD
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (C) = DLPS
+M (C) = B2BS
+AM (C) = APA
+ST (C) = PFA
+ST (C) = TFS
+
+13. 3-4-3 DM Wide
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBS
+D/WB (L) = WBS
+DM = DMD
+DM = MEZS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = PFA
+
+14. 5-2-1-2 WB
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+AM (C) = APA
+ST (C) = PA
+ST (C) = DLFS
+
+15. 4-3-1-2 Narrow
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (C) = BWMD
+M (C) = B2BS
+M (C) = DLPS
+AM (C) = APA
+ST (C) = DLFS
+ST (C) = PA
+
+16. 3-4-2-1
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (C) = BWMD
+M (C) = DLPS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = PFA
+
+17. 5-4-1 Flat
+GK = GKD
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+M (R) = WS
+M (C) = BWMD
+M (C) = DLPS
+M (L) = WS
+ST (C) = PFA
+
+18. 4-2-2-2 DM AM Narrow
+GK = SKS
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+DM = DLPS
+AM (R) = AMS
+AM (L) = AMS
+ST (C) = AFA
+ST (C) = DLFS
+
+19. 3-2-2-3
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+DM = DLPS
+DM = AD
+M (R) = MEZS
+M (L) = B2BS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = PFA
+
+20. 4-3-2-1 (Christmas Tree)
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (C) = BWMD
+M (C) = B2BS
+M (C) = APS
+AM (R) = IFA
+AM (L) = AMS
+ST (C) = PA
+
+21. 4-2-3-1 Narrow
+GK = SKS
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = AD
+AM (R) = IFA
+AM (C) = AMS
+AM (L) = WA
+ST (C) = PA
+ST (C) = DLFS
+
+22. 3-5-1-1
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+AM (C) = AMS
+ST (C) = PFA
+ST (C) = TFS
+
+23. 5-2-3 WB Wide
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+AM (R) = WA
+AM (L) = IFA
+ST (C) = AFA
+
+24. 4-2-1-3
+GK = SKS
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+M (C) = B2BS
+AM (C) = AMS
+AM (R) = IFA
+AM (L) = WA
+ST (C) = AFA
+
+25. 3-1-4-2
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+DM = AD
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = MEZS
+ST (C) = PFA
+ST (C) = PA
+
+26. 5-1-4 WB
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+M (R) = WS
+M (L) = WA
+ST (C) = PA
+
+27. 4-2-3-1 Wide Attack
+GK = SKS
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+AM (R) = IFA
+AM (C) = AMS
+AM (L) = WA
+ST (C) = AFA
+ST (C) = DLFS
+
+28. 4-2-4 Two Strikers Wide
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = BWMS
+M (C) = APA
+AM (R) = WA
+AM (L) = IFA
+ST (C) = PA
+ST (C) = DLFS
+
+29. 5-3-1-1 WB
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+AM (C) = APA
+ST (C) = PA
+ST (C) = DLFS
+
+30. 3-2-4-1
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+DM = DLPS
+DM = AD
+M (R) = MEZS
+M (L) = B2BS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = PFA
+
+31. 2-5-3 (Ultra Attacking)
+GK = SKS
+D/WB (R) = WBS
+D/WB (L) = WBS
+M (R) = MEZS
+M (C) = B2BS
+M (L) = MEZS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = AFA
+ST (C) = PFA
+ST (C) = DLFS
+
+32. 5-4-1 Diamond
+GK = GKD
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = BPDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = DLPS
+M (C) = B2BS
+AM (C) = APA
+M (R) = WS
+M (L) = WA
+
+33. 3-4-2-1 Attacking
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBA
+D/WB (L) = WBA
+M (C) = B2BS
+M (C) = DLPS
+AM (R) = IFA
+AM (L) = AMS
+ST (C) = AFA
+
+34. 4-1-2-1-2 Narrow Attack
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+DM = DMD
+M (C) = B2BS
+M (C) = MEZS
+AM (C) = AMA
+ST (C) = PA
+ST (C) = AFA
+
+35. 4-3-3 False Nine
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = APS
+M (C) = BWMD
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = F9S
+
+36. 4-2-3-1 False Nine
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+DM = DMD
+AM (R) = IFA
+AM (C) = F9S
+AM (L) = WA
+ST (C) = AFA
+ST (C) = DLFS
+
+37. 3-5-2 Wide Attack
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+D/WB (R) = WBA
+D/WB (L) = WBA
+M (C) = B2BS
+M (C) = DLPS
+M (C) = MEZS
+ST (C) = PFA
+ST (C) = AFA
+
+38. 4-3-3 Narrow
+GK = SKS
+D/WB (R) = WBS
+D (C) = CDD
+D (C) = CDD
+D/WB (L) = WBS
+M (C) = B2BS
+M (C) = DLPS
+M (C) = APS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = AFA
+
+39. 4-4-2 Diamond Narrow
+GK = GKD
+D (R) = FBS
+D (C) = CDD
+D (C) = CDD
+D (L) = FBS
+M (C) = MEZS
+M (C) = B2BS
+AM (C) = APA
+M (R) = WA
+M (L) = WS
+ST (C) = PFA
+
+40. 3-3-2-2 (Attacking)
+GK = SKS
+D (C) = WCBS
+D (C) = CDD
+D (C) = WCBS
+M (C) = DLPS
+M (C) = B2BS
+M (C) = MEZS
+AM (R) = IFA
+AM (L) = IFA
+ST (C) = AFA
+ST (C) = PFA
