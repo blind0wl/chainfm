@@ -445,6 +445,31 @@ class HTMLGenerator:
                 }
                 row.style.display = match ? '' : 'none';
             });
+            // Hide all legend roles first
+            document.querySelectorAll('.legend-row.clickable').forEach(row => {
+                row.dataset.active = '0';
+                row.classList.add('inactive');
+                setColumnVisibilityByCode(row.dataset.code, false);
+            });
+            // Enable corresponding legend group
+            const legendMapping = {
+                'GK': 'Goalkeeper',
+                'DL': 'Defender (Left/Right)',
+                'DC': 'Defender (Central)',
+                'DR': 'Defender (Left/Right)',
+                'DM': 'Defensive Midfielder',
+                'ML': 'Midfielder (Left/Right)',
+                'MC': 'Midfield (Central)',
+                'MR': 'Midfielder (Left/Right)',
+                'AML': 'Attacking Midfielder (Left/Right)',
+                'AMC': 'Attacking Midfielder (Central)',
+                'AMR': 'Attacking Midfielder (Left/Right)',
+                'ST': 'Striker'
+            };
+            const legendGroup = legendMapping[position];
+            if (legendGroup) {
+                enableRoleGroup(legendGroup);
+            }
         }
 
         function clearFilters(btn) {
@@ -611,6 +636,12 @@ class HTMLGenerator:
             // Apply role tooltips on headers
             try { applyRoleHeaderTooltips(); } catch (e) { console && console.error && console.error('Header tooltip error:', e); }
             try { defaultSortByHeaderName('Best Score', true); } catch (e) { console && console.error && console.error('Default sort error:', e); }
+            // Hide all legend filters at load
+            document.querySelectorAll('.legend-row.clickable').forEach(row => {
+                row.dataset.active = '0';
+                row.classList.add('inactive');
+                setColumnVisibilityByCode(row.dataset.code, false);
+            });
             // After initial sort, compute visible-based Best values (initially all visible)
             try { recomputeVisibleBest(); } catch(e) { /* ignore */ }
         });
