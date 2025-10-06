@@ -531,6 +531,8 @@ class HTMLGenerator:
             // Apply role tooltips on headers
             try { applyRoleHeaderTooltips(); } catch (e) { console && console.error && console.error('Header tooltip error:', e); }
             try { defaultSortByHeaderName('Best Score', true); } catch (e) { console && console.error && console.error('Default sort error:', e); }
+            // After initial sort, compute visible-based Best values (initially all visible)
+            try { recomputeVisibleBest(); } catch(e) { /* ignore */ }
         });
 
         // Best formations functionality
@@ -608,6 +610,8 @@ class HTMLGenerator:
             const next = !active;
             setColumnVisibilityByCode(code, next);
             updateLegendRowState(rowEl, next);
+            // Recompute visible-based Best Score/Role and keep sort
+            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { console && console.warn && console.warn('Recompute failed', e); }
         }
 
         function disableAllRoles(){
@@ -616,6 +620,7 @@ class HTMLGenerator:
                 setColumnVisibilityByCode(code, false);
                 updateLegendRowState(row, false);
             });
+            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { /* noop */ }
         }
 
         function enableAllRoles(){
@@ -624,6 +629,7 @@ class HTMLGenerator:
                 setColumnVisibilityByCode(code, true);
                 updateLegendRowState(row, true);
             });
+            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { /* noop */ }
         }
 
         // Group show/hide logic
@@ -636,6 +642,7 @@ class HTMLGenerator:
                     updateLegendRowState(row, true);
                 });
             });
+            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) {}
         }
         function disableRoleGroup(group) {
             const codes = POSITION_ROLE_GROUPS[group];
@@ -645,6 +652,78 @@ class HTMLGenerator:
                 document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {
                     updateLegendRowState(row, false);
                 });
+            });
+            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) {}
+        }
+
+        // -------- Visible Best Score/Role recompute --------
+        function getVisibleRoleColumns(){
+            const table = document.getElementById('playerTable');
+            if (!table) return [];
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            const cols = [];
+            headers.forEach((th, idx) => {
+                const key = (th.textContent || '').trim().toUpperCase();
+                // Consider only role headers known to ROLE_TITLES and currently visible
+                if (ROLE_TITLES && ROLE_TITLES[key] && th.style.display !== 'none') {
+                    cols.push({ index: idx, code: key });
+                }
+            });
+            return cols;
+        }
+
+        function applyScoreColor(td, val){
+            if (!td) return;
+            td.classList.remove('score-excellent','score-good','score-average','score-poor');
+            const n = typeof val === 'number' ? val : parseFloat(val);
+            if (isNaN(n)) return;
+            if (n >= 15) td.classList.add('score-excellent');
+            else if (n >= 12) td.classList.add('score-good');
+            else if (n >= 8) td.classList.add('score-average');
+            else if (n >= 5) td.classList.add('score-poor');
+        }
+
+        function reapplyCurrentSortIfAny(){
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            const sorted = headers.findIndex(th => th.classList.contains('sort-asc') || th.classList.contains('sort-desc'));
+            if (sorted >= 0){
+                const desc = headers[sorted].classList.contains('sort-desc');
+                sortTableByColumn(table, sorted, desc);
+            }
+        }
+
+        function recomputeVisibleBest(){
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            const idxMap = headerIndex();
+            const bsArr = idxMap['BEST SCORE'];
+            const brArr = idxMap['BEST ROLE'];
+            if (!bsArr || !brArr) return;
+            const bestScoreCol = Array.isArray(bsArr) ? bsArr[0] : bsArr;
+            const bestRoleCol = Array.isArray(brArr) ? brArr[0] : brArr;
+            const roleCols = getVisibleRoleColumns();
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            rows.forEach(row => {
+                let bestVal = NaN;
+                let bestCode = '';
+                roleCols.forEach(rc => {
+                    const txt = getCellText(row, rc.index);
+                    const n = parseNumberLike(txt);
+                    if (!isNaN(n)){
+                        if (isNaN(bestVal) || n > bestVal){
+                            bestVal = n; bestCode = rc.code;
+                        }
+                    }
+                });
+                const bsCell = row.cells[bestScoreCol];
+                const brCell = row.cells[bestRoleCol];
+                if (bsCell){
+                    if (isNaN(bestVal)) { bsCell.textContent = ''; } else { bsCell.textContent = (Math.round(bestVal * 10)/10).toFixed(1); }
+                    applyScoreColor(bsCell, bestVal);
+                }
+                if (brCell){ brCell.textContent = bestCode || ''; }
             });
         }
         """
@@ -799,6 +878,7 @@ ST C – Poacher (A)
                     updateLegendRowState(row, true);
                 }});
             }});
+            try {{ recomputeVisibleBest(); reapplyCurrentSortIfAny(); }} catch(e) {{}}
         }}
         function disableRoleGroup(group) {{
             const codes = POSITION_ROLE_GROUPS[group];
@@ -809,6 +889,7 @@ ST C – Poacher (A)
                     updateLegendRowState(row, false);
                 }});
             }});
+            try {{ recomputeVisibleBest(); reapplyCurrentSortIfAny(); }} catch(e) {{}}
         }}
     </script>
 </body>
