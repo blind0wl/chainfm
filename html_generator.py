@@ -172,7 +172,7 @@ class HTMLGenerator:
             group_html.append(f'<div class="legend-group" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:8px;"><strong>{group}</strong><button class="legend-toggle" onclick="enableRoleGroup(\'{group}\')">Show all</button><button class="legend-toggle" onclick="disableRoleGroup(\'{group}\')">Hide all</button></div><div style="margin-left:12px;">' + ''.join(items) + '</div></div>')
         if not group_html:
             return '<div class="legend" style="margin-bottom:6px; font-size:11px; color:#666;">Legend not available</div>'
-        legend_html = f'<div class="legend" style="margin-bottom:6px; display:none;">'
+        legend_html = f'<div id="legend" class="legend" style="margin-bottom:6px; display:none;">'
         legend_html += '<div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">'
         legend_html += '<button class="legend-toggle" onclick="enableAllRoles()">Show All</button>'
         legend_html += '<button class="legend-toggle" onclick="disableAllRoles()">Hide All</button>'
@@ -313,6 +313,11 @@ class HTMLGenerator:
         .score-average { background-color: #f1c40f; }
         .score-poor { background-color: #e74c3c; color: white; }
         
+        /* Table sorting indicators */
+        th.sort-asc::after { content: ' ▲'; color: #3498db; }
+        th.sort-desc::after { content: ' ▼'; color: #3498db; }
+        th:hover { background-color: #f8f9fa; }
+        
         .position-filter {
             margin: 5px;
             padding: 8px 16px;
@@ -365,93 +370,100 @@ class HTMLGenerator:
     
     def _generate_javascript(self) -> str:
         """Generate JavaScript functionality for the HTML report."""
-        return """
+        js = """
         // Position filter logic for FM report
         function filterByPositionBtn(btn, position) {
-            document.querySelectorAll('.position-filter').forEach(b => b.classList.remove('active'));
-            if (btn && btn.classList) btn.classList.add('active');
-            const rows = document.querySelectorAll('#playerTable tbody tr');
-            rows.forEach(row => {
-                const positionCell = row.cells[3]; // Position is 4th column (index 3)
-                if (!positionCell) return;
-                let posText = (positionCell.textContent || positionCell.innerText || '').toUpperCase().trim();
-                // Split by comma, slash, and handle parenthesis
-                let positions = [];
-                // Split by comma first, then process each part
-                posText.split(',').forEach(part => {
-                    part = part.trim();
-                    // Handle compound bases like D/WB/M (L)
-                    let matchCompound = part.match(/^([A-Z/]+)\s*(\((.*?)\))?/);
-                    if (matchCompound) {
-                        let bases = matchCompound[1].split('/').map(b => b.trim()).filter(Boolean);
-                        let sides = matchCompound[3] ? matchCompound[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
-                        bases.forEach(base => {
-                            positions.push({base, sides});
-                        });
-                    } else {
-                        // Also handle cases like DM (no side)
-                        let m = part.match(/^([A-Z]+)\s*(\((.*?)\))?/);
-                        if (m) {
-                            let base = m[1];
-                            let sides = m[3] ? m[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
-                            positions.push({base, sides});
+            try {
+                document.querySelectorAll('.position-filter').forEach(b => b.classList.remove('active'));
+                if (btn && btn.classList) btn.classList.add('active');
+                const table = document.getElementById('playerTable');
+                if (!table) { console.error('No #playerTable found'); return; }
+                // Find the position column index dynamically
+                const headers = Array.from(table.querySelectorAll('thead th'));
+                let posIdx = headers.findIndex(th => th.textContent.trim().toLowerCase() === 'pos' || th.textContent.trim().toLowerCase() === 'position');
+                if (posIdx === -1) posIdx = 3; // fallback to 4th column
+                const rows = document.querySelectorAll('#playerTable tbody tr');
+                rows.forEach(row => {
+                    const positionCell = row.cells[posIdx];
+                    if (!positionCell) return;
+                    let posText = (positionCell.textContent || positionCell.innerText || '').toUpperCase().trim();
+                    let positions = [];
+                    posText.split(',').forEach(part => {
+                        part = part.trim();
+                        let matchCompound = part.match(/^([A-Z/]+)\s*(\((.*?)\))?/);
+                        if (matchCompound) {
+                            let bases = matchCompound[1].split('/').map(b => b.trim()).filter(Boolean);
+                            let sides = matchCompound[3] ? matchCompound[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
+                            bases.forEach(base => {
+                                positions.push({base, sides});
+                            });
+                        } else {
+                            let m = part.match(/^([A-Z]+)\s*(\((.*?)\))?/);
+                            if (m) {
+                                let base = m[1];
+                                let sides = m[3] ? m[3].split(/[, ]+/).map(s => s.trim()).filter(Boolean) : [];
+                                positions.push({base, sides});
+                            }
                         }
+                    });
+                    let match = false;
+                    function sideMatch(sides, targets) {
+                        return sides.some(side => targets.some(t => side.includes(t)));
                     }
+                    switch (position) {
+                        case 'GK':
+                            match = positions.some(p => p.base === 'GK');
+                            break;
+                        case 'DL':
+                            match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['L']));
+                            break;
+                        case 'DC':
+                            match = positions.some(p => p.base === 'D' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                            break;
+                        case 'DR':
+                            match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['R']));
+                            break;
+                        case 'DM':
+                            match = positions.some(p => p.base === 'DM');
+                            break;
+                        case 'ML':
+                            match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['L']));
+                            break;
+                        case 'MC':
+                            match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                            break;
+                        case 'MR':
+                            match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['R']));
+                            break;
+                        case 'AML':
+                            match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['L']));
+                            break;
+                        case 'AMC':
+                            match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
+                            break;
+                        case 'AMR':
+                            match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['R']));
+                            break;
+                        case 'ST':
+                            match = positions.some(p => p.base === 'ST');
+                            break;
+                        default:
+                            match = false;
+                    }
+                    row.style.display = match ? '' : 'none';
                 });
-                let match = false;
-                function sideMatch(sides, targets) {
-                    // Match if any target is contained in any side
-                    return sides.some(side => targets.some(t => side.includes(t)));
-                }
-                switch (position) {
-                    case 'GK':
-                        match = positions.some(p => p.base === 'GK');
-                        break;
-                    case 'DL':
-                        match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['L']));
-                        break;
-                    case 'DC':
-                        match = positions.some(p => p.base === 'D' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
-                        break;
-                    case 'DR':
-                        match = positions.some(p => (p.base === 'D' || p.base === 'WB') && sideMatch(p.sides, ['R']));
-                        break;
-                    case 'DM':
-                        match = positions.some(p => p.base === 'DM');
-                        break;
-                    case 'ML':
-                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['L']));
-                        break;
-                    case 'MC':
-                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
-                        break;
-                    case 'MR':
-                        match = positions.some(p => p.base === 'M' && sideMatch(p.sides, ['R']));
-                        break;
-                    case 'AML':
-                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['L']));
-                        break;
-                    case 'AMC':
-                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['C', 'RC', 'LC', 'RLC']));
-                        break;
-                    case 'AMR':
-                        match = positions.some(p => p.base === 'AM' && sideMatch(p.sides, ['R']));
-                        break;
-                    case 'ST':
-                        match = positions.some(p => p.base === 'ST');
-                        break;
-                    default:
-                        match = false;
-                }
-                row.style.display = match ? '' : 'none';
-            });
+            } catch (err) {
+                console.error('Position filter error:', err);
+            }
+            
             // Hide all legend roles first
             document.querySelectorAll('.legend-row.clickable').forEach(row => {
                 row.dataset.active = '0';
                 row.classList.add('inactive');
                 setColumnVisibilityByCode(row.dataset.code, false);
             });
-            // Enable corresponding legend group
+            
+            // Enable corresponding legend group based on position
             const legendMapping = {
                 'GK': 'Goalkeeper',
                 'DL': 'Defender (Left/Right)',
@@ -466,22 +478,34 @@ class HTMLGenerator:
                 'AMR': 'Attacking Midfielder (Left/Right)',
                 'ST': 'Striker'
             };
+            
             const legendGroup = legendMapping[position];
             if (legendGroup) {
                 enableRoleGroup(legendGroup);
             }
+            
+            // Re-apply current sort after filtering
+            setTimeout(() => reapplyCurrentSort(), 100);
         }
 
         function clearFilters(btn) {
             document.querySelectorAll('.position-filter').forEach(b => b.classList.remove('active'));
             const rows = document.querySelectorAll('#playerTable tbody tr');
             rows.forEach(row => row.style.display = '');
+            
+            // Re-enable all legend roles when clearing filters
+            enableAllRoles();
+            
+            // Re-apply current sort after clearing filters
+            setTimeout(() => reapplyCurrentSort(), 100);
         }
-        
+
         // Color code score cells after page loads
         document.addEventListener('DOMContentLoaded', function() {
             try {
-                const cells = document.querySelectorAll('#playerTable td');
+                const table = document.getElementById('playerTable');
+                if (!table) { console.error('No #playerTable found for coloring'); return; }
+                const cells = table.querySelectorAll('td');
                 cells.forEach(cell => {
                     const data = parseFloat(cell.textContent);
                     if (!isNaN(data) && data >= 0 && data <= 20) {
@@ -496,25 +520,105 @@ class HTMLGenerator:
                         }
                     }
                 });
+                
+                // Initialize legend - disable all roles at page load
+                disableAllRoles();
+                
+                // Add sorting functionality to table headers
+                initializeTableSorting();
+                
             } catch (e) {
-                console && console.error && console.error('Coloring error:', e);
+                console.error('Coloring error:', e);
             }
         });
 
-        // ---------- Sorting utilities ----------
+        // Table sorting functionality
+        function initializeTableSorting() {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            
+            const headers = table.querySelectorAll('thead th');
+            headers.forEach((header, index) => {
+                header.style.cursor = 'pointer';
+                header.style.userSelect = 'none';
+                header.addEventListener('click', () => sortTableByColumn(table, index));
+            });
+            
+            // Auto-sort by Best Score column initially
+            const bestScoreIndex = Array.from(headers).findIndex(th => 
+                th.textContent.trim().toUpperCase() === 'BEST SCORE'
+            );
+            if (bestScoreIndex >= 0) {
+                sortTableByColumn(table, bestScoreIndex, true); // true = descending
+            }
+        }
+        
+        function sortTableByColumn(table, columnIndex, descending = undefined) {
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            
+            const headers = table.querySelectorAll('thead th');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const currentHeader = headers[columnIndex];
+            
+            // Determine sort direction BEFORE clearing classes
+            if (descending === undefined) {
+                // Toggle: if currently desc, make asc; if currently asc or no sort, make desc
+                descending = !currentHeader.classList.contains('sort-desc');
+            }
+            
+            // Clear previous sort indicators
+            headers.forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // Add sort indicator
+            currentHeader.classList.add(descending ? 'sort-desc' : 'sort-asc');
+            
+            // Sort rows
+            rows.sort((a, b) => {
+                const aCell = a.cells[columnIndex];
+                const bCell = b.cells[columnIndex];
+                
+                if (!aCell || !bCell) return 0;
+                
+                const aText = aCell.textContent.trim();
+                const bText = bCell.textContent.trim();
+                
+                // Try numeric comparison first
+                const aNum = parseNumberLike(aText);
+                const bNum = parseNumberLike(bText);
+                
+                let comparison;
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    comparison = aText.localeCompare(bText);
+                }
+                
+                return descending ? -comparison : comparison;
+            });
+            
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
         function parseNumberLike(text) {
             if (text == null) return NaN;
             let t = String(text).trim().toUpperCase();
             if (!t) return NaN;
+            
             // Remove currency, commas and percent
-            t = t.replace(/[£$,%\s]/g, '');
+            t = t.replace(/[£$,%\\s]/g, '');
+            
             // Handle ranges like "12-14" by taking the average
-            if (/^-?\d+(?:\.\d+)?\s*[-–]\s*-?\d+(?:\.\d+)?$/.test(t)) {
+            if (/^-?\\\\d+(?:\\\\.\\\\d+)?\\\\s*[-–]\\\\s*-?\\\\d+(?:\\\\.\\\\d+)?$/.test(t)) {
                 const parts = t.split(/[-–]/).map(s => parseFloat(s));
                 if (!isNaN(parts[0]) && !isNaN(parts[1])) return (parts[0] + parts[1]) / 2;
             }
-            // Suffixes K/M/B
-            const m = t.match(/^(-?\d+(?:\.\d+)?)([KMB])?$/);
+            
+            // Handle suffixes K/M/B
+            const m = t.match(/^(-?\\\\d+(?:\\\\.\\\\d+)?)([KMB])?$/);
             if (m) {
                 let n = parseFloat(m[1]);
                 const suf = m[2];
@@ -523,326 +627,488 @@ class HTMLGenerator:
                 else if (suf === 'B') n *= 1e9;
                 return n;
             }
-            // Fallback: just parseFloat beginning of string
-            const n = parseFloat(t);
-            return isNaN(n) ? NaN : n;
+            
+            return parseFloat(t);
+        }
+        
+        function reapplyCurrentSort() {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            const sortedHeader = headers.find(th => 
+                th.classList.contains('sort-asc') || th.classList.contains('sort-desc')
+            );
+            
+            if (sortedHeader) {
+                const columnIndex = headers.indexOf(sortedHeader);
+                const isDescending = sortedHeader.classList.contains('sort-desc');
+                sortTableByColumn(table, columnIndex, isDescending);
+            }
         }
 
-        function getCellText(row, idx) {
-            if (!row) return '';
-            const cell = row.cells[idx];
-            if (!cell) return '';
-            return (cell.textContent || cell.innerText || '').trim();
-        }
-
-        function detectNumericColumn(table, colIndex) {
-            const rows = Array.from(table.querySelectorAll('tbody tr'));
-            let seen = 0, numeric = 0;
-            for (let i = 0; i < rows.length && seen < 30; i++) {
-                const txt = getCellText(rows[i], colIndex);
-                if (txt !== '') {
-                    seen++;
-                    const val = parseNumberLike(txt);
-                    if (!isNaN(val)) numeric++;
+        // Legend toggle functionality
+        function toggleLegendExternal(button) {
+            const legend = document.getElementById('legend');
+            if (legend) {
+                const isHidden = legend.style.display === 'none';
+                legend.style.display = isHidden ? 'block' : 'none';
+                
+                // Update button text
+                if (button) {
+                    button.textContent = isHidden ? 'Hide legend' : 'Show legend';
                 }
             }
-            return numeric > 0 && numeric >= Math.max(1, Math.floor(seen * 0.6));
         }
 
-        function sortTableByColumn(table, colIndex, desc) {
-            const tbody = table.querySelector('tbody');
-            if (!tbody) return;
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            const isNumeric = detectNumericColumn(table, colIndex);
-            const withIndex = rows.map((row, i) => ({ row, i }));
-
-            withIndex.sort((a, b) => {
-                const ta = getCellText(a.row, colIndex);
-                const tb = getCellText(b.row, colIndex);
-                if (isNumeric) {
-                    const va = parseNumberLike(ta);
-                    const vb = parseNumberLike(tb);
-                    const aNaN = isNaN(va), bNaN = isNaN(vb);
-                    if (aNaN && bNaN) return a.i - b.i; // stable
-                    if (aNaN) return 1; // NaN to bottom
-                    if (bNaN) return -1;
-                    return va === vb ? (a.i - b.i) : (va - vb);
-                } else {
-                    const sa = ta.toLowerCase();
-                    const sb = tb.toLowerCase();
-                    const cmp = sa.localeCompare(sb);
-                    return cmp === 0 ? (a.i - b.i) : cmp;
-                }
-            });
-
-            if (desc) withIndex.reverse();
-            // Reattach in sorted order
-            withIndex.forEach(w => tbody.appendChild(w.row));
+        // Best formations functionality
+        function toggleBestFormations() {
+            const panel = document.getElementById('bestFormationsPanel');
+            if (panel) {
+                const isHidden = panel.style.display === 'none' || !panel.style.display;
+                panel.style.display = isHidden ? 'block' : 'none';
+            } else {
+                console.error('bestFormationsPanel not found');
+            }
         }
 
-        function clearSortIndicators(table) {
-            table.querySelectorAll('thead th').forEach(th => {
-                th.classList.remove('sort-asc', 'sort-desc');
+        // Legend role management functions
+        function legendToggleRole(element) {
+            const code = element.dataset.code;
+            const isActive = element.dataset.active === '1';
+            
+            if (isActive) {
+                element.dataset.active = '0';
+                element.classList.add('inactive');
+                setColumnVisibilityByCode(code, false);
+            } else {
+                element.dataset.active = '1';
+                element.classList.remove('inactive');
+                setColumnVisibilityByCode(code, true);
+            }
+        }
+
+        function enableAllRoles() {
+            document.querySelectorAll('.legend-row.clickable').forEach(row => {
+                row.dataset.active = '1';
+                row.classList.remove('inactive');
+                setColumnVisibilityByCode(row.dataset.code, true);
             });
         }
 
-        function initSorting() {
-            const table = document.getElementById('playerTable');
-            if (!table) return;
-            const headers = table.querySelectorAll('thead th');
-            headers.forEach((th, idx) => {
-                th.classList.add('sortable');
-                th.addEventListener('click', function() {
-                    const currentlyAsc = th.classList.contains('sort-asc');
-                    const currentlyDesc = th.classList.contains('sort-desc');
-                    const nextDesc = currentlyAsc && !currentlyDesc ? true : !currentlyDesc ? false : false; // toggle asc->desc, unsorted->asc, desc->asc
-                    // Determine direction: cycles asc -> desc -> asc
-                    const desc = currentlyAsc ? true : (currentlyDesc ? false : false);
-                    // Apply sort
-                    sortTableByColumn(table, idx, desc);
-                    // Update indicators
-                    clearSortIndicators(table);
-                    th.classList.add(desc ? 'sort-desc' : 'sort-asc');
-                });
-            });
-        }
-
-        function defaultSortByHeaderName(name, desc){
-            const table = document.getElementById('playerTable');
-            if (!table) return;
-            const idxMap = headerIndex();
-            const key = String(name || '').trim().toUpperCase();
-            const indices = idxMap[key];
-            if (!indices || indices.length === 0) return;
-            const colIndex = Array.isArray(indices) ? indices[0] : indices;
-            sortTableByColumn(table, colIndex, !!desc);
-            clearSortIndicators(table);
-            const th = table.querySelectorAll('thead th')[colIndex];
-            if (th) th.classList.add(desc ? 'sort-desc' : 'sort-asc');
-        }
-
-        // External toggle for legend
-        function toggleLegendExternal(extBtn) {
-            const legend = document.querySelector('.legend');
-            if (!legend) return;
-            const isHidden = window.getComputedStyle(legend).display === 'none';
-            legend.style.display = isHidden ? 'block' : 'none';
-            if (extBtn) extBtn.textContent = isHidden ? 'Hide legend' : 'Show legend';
-        }
-
-        // Initialize sorting and best formations functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            try { initSorting(); } catch (e) { console && console.error && console.error('Sorting init error:', e); }
-            // Apply role tooltips on headers
-            try { applyRoleHeaderTooltips(); } catch (e) { console && console.error && console.error('Header tooltip error:', e); }
-            try { defaultSortByHeaderName('Best Score', true); } catch (e) { console && console.error && console.error('Default sort error:', e); }
-            // Hide all legend filters at load
+        function disableAllRoles() {
             document.querySelectorAll('.legend-row.clickable').forEach(row => {
                 row.dataset.active = '0';
                 row.classList.add('inactive');
                 setColumnVisibilityByCode(row.dataset.code, false);
             });
-            // After initial sort, compute visible-based Best values (initially all visible)
-            try { recomputeVisibleBest(); } catch(e) { /* ignore */ }
-        });
-
-        // Best formations functionality
-        function toggleBestFormations(){
-            const p = document.getElementById('bestFormationsPanel');
-            if (!p) return;
-            const isHidden = window.getComputedStyle(p).display === 'none';
-            p.style.display = isHidden ? 'block' : 'none';
         }
-        
-        // Role header tooltips
-        function applyRoleHeaderTooltips(){
-            try {
-                const table = document.getElementById('playerTable');
-                if (!table || typeof ROLE_TITLES !== 'object') return;
-                const headers = table.querySelectorAll('thead th');
-                headers.forEach(th => {
-                    const key = (th.textContent || '').trim().toUpperCase();
-                    if (ROLE_TITLES[key]) {
-                        th.title = ROLE_TITLES[key];
+
+        function enableRoleGroup(groupName) {
+            const group = Array.from(document.querySelectorAll('.legend-group')).find(g => 
+                g.querySelector('strong').textContent === groupName
+            );
+            if (group) {
+                group.querySelectorAll('.legend-row.clickable').forEach(row => {
+                    row.dataset.active = '1';
+                    row.classList.remove('inactive');
+                    setColumnVisibilityByCode(row.dataset.code, true);
+                });
+            }
+        }
+
+        function disableRoleGroup(groupName) {
+            const group = Array.from(document.querySelectorAll('.legend-group')).find(g => 
+                g.querySelector('strong').textContent === groupName
+            );
+            if (group) {
+                group.querySelectorAll('.legend-row.clickable').forEach(row => {
+                    row.dataset.active = '0';
+                    row.classList.add('inactive');
+                    setColumnVisibilityByCode(row.dataset.code, false);
+                });
+            }
+        }
+
+        function setColumnVisibilityByCode(code, visible) {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+
+            // Find column index by code
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            const colIndex = headers.findIndex(th => th.textContent.trim() === code);
+            
+            if (colIndex >= 0) {
+                // Toggle header visibility
+                headers[colIndex].style.display = visible ? '' : 'none';
+                
+                // Toggle body cell visibility
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if (row.cells[colIndex]) {
+                        row.cells[colIndex].style.display = visible ? '' : 'none';
                     }
                 });
-            } catch (e) {
-                console && console.warn && console.warn('Tooltip application failed', e);
+                
+                // Re-apply current sort after column visibility change
+                setTimeout(() => reapplyCurrentSort(), 50);
             }
         }
 
-        function headerIndex(){
-            const map = {};
-            document.querySelectorAll('#playerTable thead th').forEach((th,i)=>{
-                const k = (th.textContent||'').trim().toUpperCase();
-                if (!map[k]) map[k] = [];
-                map[k].push(i);
-            });
-            return map;
-        }
-
-        // Column visibility via legend
-        function setColumnVisibilityByIndex(colIndex, visible){
-            if (colIndex == null || colIndex < 0) return;
+        // Best formations computation
+        function computeTopFormations() {
+            const resultsDiv = document.getElementById('bestFormationsResults');
+            const specTextarea = document.getElementById('formationSpec');
             const table = document.getElementById('playerTable');
-            if (!table) return;
-            const th = table.querySelectorAll('thead th')[colIndex];
-            if (th) th.style.display = visible ? '' : 'none';
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(r=>{
-                const cell = r.cells[colIndex];
-                if (cell) cell.style.display = visible ? '' : 'none';
-            });
-        }
-
-        function setColumnVisibilityByCode(code, visible){
-            if (!code) return;
-            const idx = headerIndex();
-            const key = code.toUpperCase();
-            const val = idx[key];
-            if (val==null) return;
-            if (Array.isArray(val)) {
-                val.forEach(i=> setColumnVisibilityByIndex(i, visible));
-            } else {
-                setColumnVisibilityByIndex(val, visible);
+            
+            if (!resultsDiv || !specTextarea || !table) {
+                console.error('Missing required elements for formation computation');
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<p>Computing formations...</p>';
+            
+            try {
+                const specText = specTextarea.textContent || specTextarea.value;
+                const formations = parseFormations(specText);
+                const players = getVisiblePlayers(table);
+                
+                if (formations.length === 0 || players.length === 0) {
+                    resultsDiv.innerHTML = '<p class="muted">No formations (' + formations.length + ') or players (' + players.length + ') available for analysis.</p>';
+                    return;
+                }
+                
+                const results = analyzeFormations(formations, players);
+                displayFormationResults(results.slice(0, 3), resultsDiv);
+                
+            } catch (error) {
+                console.error('Error computing formations:', error);
+                resultsDiv.innerHTML = '<p class="muted">Error computing formations. Please try again.</p>';
             }
         }
-
-        function updateLegendRowState(rowEl, active){
-            if (!rowEl) return;
-            rowEl.dataset.active = active ? '1' : '0';
-            rowEl.classList.toggle('inactive', !active);
-        }
-
-        function legendToggleRole(rowEl){
-            const code = rowEl && rowEl.dataset ? rowEl.dataset.code : null;
-            if (!code) return;
-            const active = rowEl.dataset.active !== '0';
-            const next = !active;
-            setColumnVisibilityByCode(code, next);
-            updateLegendRowState(rowEl, next);
-            // Recompute visible-based Best Score/Role and keep sort
-            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { console && console.warn && console.warn('Recompute failed', e); }
-        }
-
-        function disableAllRoles(){
-            document.querySelectorAll('.legend-row.clickable').forEach(row=>{
-                const code = row.dataset.code;
-                setColumnVisibilityByCode(code, false);
-                updateLegendRowState(row, false);
-            });
-            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { /* noop */ }
-        }
-
-        function enableAllRoles(){
-            document.querySelectorAll('.legend-row.clickable').forEach(row=>{
-                const code = row.dataset.code;
-                setColumnVisibilityByCode(code, true);
-                updateLegendRowState(row, true);
-            });
-            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) { /* noop */ }
-        }
-
-        // Group show/hide logic
-        function enableRoleGroup(group) {
-            const codes = POSITION_ROLE_GROUPS[group];
-            if (!codes) return;
-            codes.forEach(function(code) {
-                setColumnVisibilityByCode(code, true);
-                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {
-                    updateLegendRowState(row, true);
-                });
-            });
-            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) {}
-        }
-        function disableRoleGroup(group) {
-            const codes = POSITION_ROLE_GROUPS[group];
-            if (!codes) return;
-            codes.forEach(function(code) {
-                setColumnVisibilityByCode(code, false);
-                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {
-                    updateLegendRowState(row, false);
-                });
-            });
-            try { recomputeVisibleBest(); reapplyCurrentSortIfAny(); } catch(e) {}
-        }
-
-        // -------- Visible Best Score/Role recompute --------
-        function getVisibleRoleColumns(){
-            const table = document.getElementById('playerTable');
-            if (!table) return [];
-            const headers = Array.from(table.querySelectorAll('thead th'));
-            const cols = [];
-            headers.forEach((th, idx) => {
-                const key = (th.textContent || '').trim().toUpperCase();
-                // Consider only role headers known to ROLE_TITLES and currently visible
-                if (ROLE_TITLES && ROLE_TITLES[key] && th.style.display !== 'none') {
-                    cols.push({ index: idx, code: key });
+        
+        function parseFormations(specText) {
+            const formations = [];
+            let current = null;
+            
+            // Split by actual newlines, not literal \\n
+            specText.split('\\n').forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                const m = line.match(/^(\\\\d+)\\\\. (.+)$/);
+                if (m) {
+                    if (current) formations.push(current);
+                    current = { name: m[2], positions: [] };
+                } else if (current) {
+                    // More flexible parsing for formation lines - handle both en dash (–) and regular hyphen (-)
+                    const pm = line.match(/^([A-Z\\/\\\\s]+)\\\\s*[–\\u2013\\\\-]\\\\s*(.+)$/);
+                    if (pm) {
+                        let pos = pm[1].trim();
+                        let role = pm[2].trim();
+                        current.positions.push({ pos, role });
+                    }
                 }
             });
-            return cols;
+            
+            if (current) formations.push(current);
+            
+            return formations;
         }
-
-        function applyScoreColor(td, val){
-            if (!td) return;
-            td.classList.remove('score-excellent','score-good','score-average','score-poor');
-            const n = typeof val === 'number' ? val : parseFloat(val);
-            if (isNaN(n)) return;
-            if (n >= 15) td.classList.add('score-excellent');
-            else if (n >= 12) td.classList.add('score-good');
-            else if (n >= 8) td.classList.add('score-average');
-            else if (n >= 5) td.classList.add('score-poor');
-        }
-
-        function reapplyCurrentSortIfAny(){
-            const table = document.getElementById('playerTable');
-            if (!table) return;
+        
+        function getVisiblePlayers(table) {
+            const players = [];
             const headers = Array.from(table.querySelectorAll('thead th'));
-            const sorted = headers.findIndex(th => th.classList.contains('sort-asc') || th.classList.contains('sort-desc'));
-            if (sorted >= 0){
-                const desc = headers[sorted].classList.contains('sort-desc');
-                sortTableByColumn(table, sorted, desc);
+            
+            // Look for both "Name" and "Player" columns
+            const nameIdx = headers.findIndex(th => {
+                const text = th.textContent.trim().toLowerCase();
+                return text === 'name' || text === 'player';
+            });
+            const posIdx = headers.findIndex(th => th.textContent.trim().toLowerCase() === 'pos');
+            
+            if (nameIdx === -1 || posIdx === -1) {
+                return players;
             }
-        }
-
-        function recomputeVisibleBest(){
-            const table = document.getElementById('playerTable');
-            if (!table) return;
-            const idxMap = headerIndex();
-            const bsArr = idxMap['BEST SCORE'];
-            const brArr = idxMap['BEST ROLE'];
-            if (!bsArr || !brArr) return;
-            const bestScoreCol = Array.isArray(bsArr) ? bsArr[0] : bsArr;
-            const bestRoleCol = Array.isArray(brArr) ? brArr[0] : brArr;
-            const roleCols = getVisibleRoleColumns();
+            
             const rows = Array.from(table.querySelectorAll('tbody tr'));
+            
+            let visibleRows = 0;
             rows.forEach(row => {
-                let bestVal = NaN;
-                let bestCode = '';
-                roleCols.forEach(rc => {
-                    const txt = getCellText(row, rc.index);
-                    const n = parseNumberLike(txt);
-                    if (!isNaN(n)){
-                        if (isNaN(bestVal) || n > bestVal){
-                            bestVal = n; bestCode = rc.code;
+                if (row.style.display !== 'none') {
+                    visibleRows++;
+                    const name = row.cells[nameIdx]?.textContent?.trim() || '';
+                    const pos = row.cells[posIdx]?.textContent?.trim() || '';
+                    
+                    const scores = {};
+                    headers.forEach((header, idx) => {
+                        const headerText = header.textContent.trim();
+                        // Skip non-role columns (name, position, age, club, etc.)
+                        const skipColumns = ['player', 'name', 'pos', 'age', 'club', 'best score', 'best role'];
+                        if (!skipColumns.includes(headerText.toLowerCase()) && 
+                            headerText.length <= 4 && 
+                            headerText.length >= 1) {
+                            const cellText = row.cells[idx]?.textContent?.trim() || '';
+                            const score = parseFloat(cellText);
+                            if (!isNaN(score)) {
+                                scores[headerText] = score;
+                            }
+                        }
+                    });
+                    
+                    players.push({ name, pos, scores });
+                }
+            });
+            
+            return players;
+        }
+        
+        function analyzeFormations(formations, players) {
+            const results = [];
+            
+            formations.forEach(formation => {
+                // Use proper assignment algorithm to avoid duplicates
+                const assignment = assignPlayersToFormation(formation, players);
+                
+                let totalScore = 0;
+                let validPositions = 0;
+                const assignments = [];
+                
+                assignment.forEach(assign => {
+                    if (assign.player) {
+                        totalScore += assign.score;
+                        validPositions++;
+                        assignments.push({
+                            position: assign.position,
+                            role: assign.role,
+                            player: assign.player.name,
+                            score: assign.score
+                        });
+                    } else {
+                        // Count unfilled positions as 0 in the total score
+                        totalScore += 0;
+                    }
+                });
+                
+                // Calculate average using ALL positions (filled + unfilled)
+                const totalPositions = formation.positions.length;
+                const avgScore = totalPositions > 0 ? totalScore / totalPositions : 0;
+                
+                results.push({
+                    formation: formation.name,
+                    avgScore: avgScore,
+                    totalScore: totalScore,
+                    validPositions: validPositions,
+                    totalPositions: formation.positions.length,
+                    assignments: assignments
+                });
+            });
+            
+            return results.sort((a, b) => b.avgScore - a.avgScore);
+        }
+        
+        function assignPlayersToFormation(formation, players) {
+            const assignments = [];
+            const usedPlayers = new Set();
+            
+            // Sort positions by specificity (harder to fill positions first)
+            const sortedPositions = [...formation.positions].sort((a, b) => {
+                const aCount = getEligiblePlayersCount(players, a.pos);
+                const bCount = getEligiblePlayersCount(players, b.pos);
+                return aCount - bCount; // Fewer eligible players = higher priority
+            });
+            
+            sortedPositions.forEach(formPos => {
+                // Find best available player for this position
+                let bestPlayer = null;
+                let bestScore = -1;
+                
+                players.forEach(player => {
+                    if (!usedPlayers.has(player.name) && isPlayerEligibleForPosition(player, formPos.pos)) {
+                        const roleScore = player.scores[formPos.role];
+                        const defaultScore = calculateDefaultScore(player, formPos.role);
+                        const finalScore = roleScore || defaultScore;
+                        
+                        if (finalScore > bestScore) {
+                            bestScore = finalScore;
+                            bestPlayer = player;
                         }
                     }
                 });
-                const bsCell = row.cells[bestScoreCol];
-                const brCell = row.cells[bestRoleCol];
-                if (bsCell){
-                    if (isNaN(bestVal)) { bsCell.textContent = ''; } else { bsCell.textContent = (Math.round(bestVal * 10)/10).toFixed(1); }
-                    applyScoreColor(bsCell, bestVal);
+                
+                if (bestPlayer) {
+                    usedPlayers.add(bestPlayer.name);
+                    assignments.push({
+                        position: formPos.pos,
+                        role: formPos.role,
+                        player: bestPlayer,
+                        score: bestScore
+                    });
+                } else {
+                    assignments.push({
+                        position: formPos.pos,
+                        role: formPos.role,
+                        player: null,
+                        score: 0
+                    });
                 }
-                if (brCell){ brCell.textContent = bestCode || ''; }
             });
+            
+            return assignments;
         }
+        
+        function getEligiblePlayersCount(players, position) {
+            return players.filter(p => isPlayerEligibleForPosition(p, position)).length;
+        }
+        
+        function findBestPlayerForPosition(players, formationPos, role) {
+            let bestPlayer = null;
+            let bestScore = -1;
+            
+            players.forEach(player => {
+                const eligible = isPlayerEligibleForPosition(player, formationPos);
+                if (eligible) {
+                    let score = player.scores[role] || calculateDefaultScore(player, role);
+                    
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestPlayer = player;
+                    }
+                } else {
+                    // Player not eligible
+                }
+            });
+            
+            return bestPlayer ? { player: bestPlayer, score: bestScore } : null;
+        }
+        
+        function isPlayerEligibleForPosition(player, formationPos) {
+            const playerPositions = player.pos.split(',').map(p => p.trim());
+            const targetPos = formationPos.toUpperCase().trim();
+            
+            const isEligible = playerPositions.some(pos => {
+                // First check if the position has sides in parentheses at the end
+                const fullPosMatch = pos.match(/^(.+?)\\\\s*\\\\(([LRC]+)\\\\)$/);
+                if (fullPosMatch) {
+                    // Position like "D/WB (R)" or "M/AM (C)"
+                    const rolesPart = fullPosMatch[1].trim(); // "D/WB" or "M/AM"
+                    const sides = fullPosMatch[2]; // "R" or "C"
+                    
+                    // Split roles by "/" and check each one
+                    const roles = rolesPart.split('/').map(r => r.trim());
+                    
+                    return roles.some(role => {
+                        return checkRoleMatch(role, sides, targetPos);
+                    });
+                } else {
+                    // Position without explicit sides like "DM", "GK"
+                    return checkRoleMatch(pos, '', targetPos);
+                }
+            });
+            
+            return isEligible;
+        }
+        
+        function checkRoleMatch(playerRole, playerSides, targetPos) {
+            if (targetPos.includes('/')) {
+                // Multi-role formation position like "D/WB L"
+                const targetParts = targetPos.split('/');
+                return targetParts.some(part => {
+                    const partMatch = part.trim().match(/^([A-Z]+)\\\\s*([LRC])?$/);
+                    if (partMatch) {
+                        const targetRole = partMatch[1];
+                        const targetSide = partMatch[2];
+                        return checkSingleRoleMatch(playerRole, playerSides, targetRole, targetSide);
+                    }
+                    return false;
+                });
+            } else {
+                // Single formation position like "MC", "DC", "D L", "GK", "ST C"
+                const targetMatch = targetPos.match(/^([A-Z]+)\\\\s*([LRC])?$/);
+                if (targetMatch) {
+                    const targetRole = targetMatch[1];
+                    const targetSide = targetMatch[2];
+                    return checkSingleRoleMatch(playerRole, playerSides, targetRole, targetSide);
+                }
+            }
+            return false;
+        }
+        
+        function checkSingleRoleMatch(playerRole, playerSides, targetRole, targetSide) {
+            // Handle compound positions like DC, MC vs D, M
+            let roleMatches = false;
+            
+            if (targetRole === 'DC' && playerRole === 'D') {
+                // DC (Central Defender) matches D players who can play center
+                roleMatches = !playerSides || playerSides.includes('C') || playerSides.includes('RC') || playerSides.includes('LC');
+            } else if (targetRole === 'MC' && playerRole === 'M') {
+                // MC (Central Midfielder) matches M players who can play center  
+                roleMatches = !playerSides || playerSides.includes('C') || playerSides.includes('RC') || playerSides.includes('LC');
+            } else if (targetRole === 'AMC' && playerRole === 'AM') {
+                // AMC (Central Attacking Mid) matches AM players who can play center
+                roleMatches = !playerSides || playerSides.includes('C') || playerSides.includes('RC') || playerSides.includes('LC');
+            } else {
+                // Direct role match
+                roleMatches = playerRole === targetRole;
+            }
+            
+            // Check side compatibility
+            let sideMatches = true;
+            if (targetSide && playerSides) {
+                sideMatches = playerSides.includes(targetSide);
+            }
+            
+            return roleMatches && sideMatches;
+        }
+        
+        function calculateDefaultScore(player, role) {
+            const scores = Object.values(player.scores);
+            const average = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+            return average;
+        }
+        
+        function displayFormationResults(results, container) {
+            if (results.length === 0) {
+                container.innerHTML = '<p class="muted">No suitable formations found.</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>Rank</th><th>Formation</th><th>Avg Score</th><th>Details</th></tr></thead><tbody>';
+            
+            results.forEach((result, idx) => {
+                html += '<tr>' +
+                    '<td>' + (idx + 1) + '</td>' +
+                    '<td><strong>' + result.formation + '</strong></td>' +
+                    '<td>' + result.avgScore.toFixed(1) + '</td>' +
+                    '<td>' + result.validPositions + '/' + (result.totalPositions || result.assignments.length) + ' positions filled</td>' +
+                '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Make functions globally available
+        window.filterByPositionBtn = filterByPositionBtn;
+        window.clearFilters = clearFilters;
+        window.toggleLegendExternal = toggleLegendExternal;
+        window.toggleBestFormations = toggleBestFormations;
+        window.legendToggleRole = legendToggleRole;
+        window.enableAllRoles = enableAllRoles;
+        window.disableAllRoles = disableAllRoles;
+        window.enableRoleGroup = enableRoleGroup;
+        window.disableRoleGroup = disableRoleGroup;
+        window.setColumnVisibilityByCode = setColumnVisibilityByCode;
+        window.computeTopFormations = computeTopFormations;
+        window.sortTableByColumn = sortTableByColumn;
+        window.reapplyCurrentSort = reapplyCurrentSort;
         """
+        return js
     
     def _generate_formation_analyzer(self) -> str:
-        """Generate formation analysis textarea content."""
-        return """
-1. 4-4-2
+        # Generate formation analysis textarea content.
+        return """1. 4-4-2
 GK – Goalkeeper (D)
 D R – Full Back (S)
 DC – Central Defender (D)
@@ -918,95 +1184,56 @@ MC – Box-to-Box Mid (S)
 MC – Deep-Lying Playmaker (S)
 MC – Ball-Winning Mid (D)
 ST C – Target Forward (S)
-ST C – Poacher (A)
-        """
-    
+ST C – Poacher (A)"""
+        
     def _generate_full_html(self, table_html: str, legend_html: str) -> str:
-        """Generate the complete HTML document."""
+    # Generate the complete HTML document.
         
         css_styles = self._generate_css_styles()
         javascript = self._generate_javascript()
         formation_content = self._generate_formation_analyzer()
         
+        # Properly escape the formation content for HTML textarea
+        formation_content_escaped = formation_content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#x27;')
+        
         role_titles_json = json.dumps(FULL_ROLE_DESCRIPTIONS)
         position_role_groups_json = json.dumps(POSITION_ROLE_GROUPS)
-        html_template = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>FM Player Analysis</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        {css_styles}
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Football Manager Player Analysis</h1>
-        <p>Comprehensive role suitability analysis for your squad</p>
-    </div>
-    
-    <div class="controls">
-        <div>
-            <strong>Quick Filters:</strong>
-            <button class="position-filter" onclick="filterByPosition(this, 'GK')">Goalkeepers</button>
-            <button class="position-filter" onclick="filterByPosition(this, 'D')">Defenders</button>
-            <button class="position-filter" onclick="filterByPosition(this, 'M')">Midfielders</button>
-            <button class="position-filter" onclick="filterByPosition(this, 'F')">Forwards</button>
-            <button class="position-filter" onclick="clearFilters(this)">Show All</button>
-            <button id="externalLegendToggle" class="legend-toggle" style="margin-left:12px;" onclick="toggleLegendExternal(this)">Show legend</button>
-            <button class="legend-toggle" style="margin-left:8px;" onclick="toggleBestFormations()">Best formations</button>
-        </div>
-        <div id="bestFormationsPanel">
-            <div class="row">
-                <span class="muted">Top 3 matches based on Pos eligibility and Best Score (0–20):</span>
-                <button onclick="computeTopFormations()">Compute top 3</button>
-            </div>
-            <div id="bestFormationsResults"></div>
-            <textarea id="formationSpec" style="display:none;">
-{formation_content}
-            </textarea>
-        </div>
-    </div>
-    
-    <!-- Legend inserted here -->
-    {legend_html}
-    <div class="table-container">{table_html}</div>
-    <script>
-        // Map of role codes to full names for header tooltips
-        const ROLE_TITLES = {role_titles_json};
-        // Position to role group mapping for legend controls
-        const POSITION_ROLE_GROUPS = {position_role_groups_json};
-        {javascript}
-        // Group show/hide logic
-        function enableRoleGroup(group) {{
-            const codes = POSITION_ROLE_GROUPS[group];
-            if (!codes) return;
-            codes.forEach(function(code) {{
-                setColumnVisibilityByCode(code, true);
-                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {{
-                    updateLegendRowState(row, true);
-                }});
-            }});
-            try {{ recomputeVisibleBest(); reapplyCurrentSortIfAny(); }} catch(e) {{}}
-        }}
-        function disableRoleGroup(group) {{
-            const codes = POSITION_ROLE_GROUPS[group];
-            if (!codes) return;
-            codes.forEach(function(code) {{
-                setColumnVisibilityByCode(code, false);
-                document.querySelectorAll('.legend-row[data-code="'+code+'"]').forEach(function(row) {{
-                    updateLegendRowState(row, false);
-                }});
-            }});
-            try {{ recomputeVisibleBest(); reapplyCurrentSortIfAny(); }} catch(e) {{}}
-        }}
-    </script>
-</body>
-</html>
-        """
-        
+        html_template = (
+            f'<!DOCTYPE html>'
+            f'<html>'
+            f'<head>'
+            f'<title>FM Player Analysis</title>'
+            f'<meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+            f'<style>{css_styles}</style>'
+            f'</head>'
+            f'<body>'
+            f'<div class="header">'
+            f'<h1>Football Manager Player Analysis</h1>'
+            f'<p>Comprehensive role suitability analysis for your squad</p>'
+            f'</div>'
+            f'<div class="controls" style="margin-bottom:16px;">'
+            f'<button id="externalLegendToggle" class="legend-toggle" style="margin-left:12px;" onclick="toggleLegendExternal(this)">Show legend</button>'
+            f'<button class="legend-toggle" style="margin-left:8px;" onclick="toggleBestFormations()">Best formations</button>'
+            f'</div>'
+            f'{legend_html}'
+            f'<div id="bestFormationsPanel" style="display:none;">'
+            f'<div class="row">'
+            f'<span class="muted">Top 3 matches based on Pos eligibility and Best Score (0–20):</span>'
+            f'<button onclick="computeTopFormations()">Compute top 3</button>'
+            f'</div>'
+            f'<div id="bestFormationsResults"></div>'
+            f'<textarea id="formationSpec" style="display:none;">{formation_content_escaped}</textarea>'
+            f'</div>'
+            f'<div class="table-container">{table_html}</div>'
+            f'<script>'
+            f'const ROLE_TITLES = {role_titles_json};'
+            f'const POSITION_ROLE_GROUPS = {position_role_groups_json};'
+            f'{javascript}'
+            f'</script>'
+            f'</body>'
+            f'</html>'
+        )
         return html_template
 
 
