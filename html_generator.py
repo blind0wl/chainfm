@@ -15,12 +15,15 @@ from role_definitions import ROLE_DISPLAY_NAMES, FULL_ROLE_DESCRIPTIONS
 logger = logging.getLogger(__name__)
 
 POSITION_ROLE_GROUPS = {
-    "Attacking Midfielder (Central)": ["AMA", "AMS", "APA", "APS", "TFS", "TFA", "TREA", "SSA"],
-    "Striker": ["DLFA", "DLFS", "DLPD", "DLPS", "AFA", "TFA", "TFS", "PA", "CFA", "CFS", "PFD", "PFS", "PFA", "TFEA", "F9S"],
-    "Midfield (Central)": ["CMA", "CMD", "CMS", "DLPD", "DLPS", "B2BS", "APA", "APS", "BWMD", "BWMS", "RPS", "MEZS", "MEZA", "CARS"],
+    "Goalkeeper": ["GKD", "SKD", "SKS", "SKA"],
     "Defender (Left/Right)": ["FBA", "FBD", "FBS", "WBD", "WBS", "WBA", "NFBD", "CWBA", "CWBS", "IWBD", "IWBS", "IWBA", "IFBD", "IFBS"],
     "Defender (Central)": ["CDC", "CDD", "CDS", "LD", "LS", "BPDC", "BPDD", "BPDS", "NCBD", "NCBS", "NCBC", "WCBD", "WCBS", "WCBA"],
-    "Goalkeeper": ["GKD", "SKD", "SKS", "SKA"]
+    "Defensive Midfielder": ["DMD", "DMS", "DLPD", "DLPS", "BWMD", "BWMS", "AD", "HBD", "REGS", "RPS", "SVS", "SVA"],
+    "Midfield (Central)": ["CMA", "CMD", "CMS", "DLPD", "DLPS", "B2BS", "APA", "APS", "BWMD", "BWMS", "RPS", "MEZS", "MEZA", "CARS"],
+    "Midfielder (Left/Right)": ["WMD", "WMS", "WMA", "WS", "WA", "DWD", "DWS", "WPS", "WPA", "IWA", "IWS"],
+    "Attacking Midfielder (Central)": ["AMA", "AMS", "APA", "APS", "ENGS", "TREA", "SSA"],
+    "Attacking Midfielder (Left/Right)": ["WS", "WA", "APA", "APS", "IFA", "IFS", "TREA", "WTFS", "WTFA", "RAUA", "IWA", "IWS"],
+    "Striker": ["DLFA", "DLFS", "DLPD", "DLPS", "AFA", "TFA", "TFS", "PA", "CFA", "CFS", "PFD", "PFS", "PFA", "TFEA", "F9S"]        
 }
 
 

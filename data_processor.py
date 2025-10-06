@@ -11,7 +11,7 @@ import re
 from typing import Dict, List, Optional, Callable
 import logging
 
-from role_definitions import get_role_definitions, get_composite_scores, get_expected_role_order
+from role_definitions import get_role_definitions, get_expected_role_order
 
 logger = logging.getLogger(__name__)
 
@@ -205,34 +205,34 @@ def compute_role_scores(df: pd.DataFrame) -> Dict[str, pd.Series]:
     return role_scores
 
 
-def compute_composite_scores(df: pd.DataFrame) -> Dict[str, pd.Series]:
-    """
-    Compute composite position scores (e.g., FB, CB).
-    
-    Args:
-        df: DataFrame containing FM data
-        
-    Returns:
-        Dictionary of composite score Series
-    """
-    get = lambda c: safe_get_attribute(df, c)
-    composite_defs = get_composite_scores()
-    composite_scores = {}
-    
-    for comp_name, comp_def in composite_defs.items():
-        key_sum = sum(get(attr) for attr in comp_def['key_attrs'])
-        green_sum = sum(get(attr) for attr in comp_def['green_attrs'])
-        blue_sum = sum(get(attr) for attr in comp_def['blue_attrs'])
-        
-        total_weight = (len(comp_def['key_attrs']) * 5 + 
-                       len(comp_def['green_attrs']) * 3 + 
-                       len(comp_def['blue_attrs']) * 1)
-        
-        score = (((key_sum * 5) + (green_sum * 3) + (blue_sum * 1)) / total_weight).round(1)
-        composite_scores[comp_name] = score
-    
-    logger.info(f"Computed {len(composite_scores)} composite scores")
-    return composite_scores
+# def compute_composite_scores(df: pd.DataFrame) -> Dict[str, pd.Series]:
+#     """
+#     Compute composite position scores (e.g., FB, CB).
+#     
+#     Args:
+#         df: DataFrame containing FM data
+#         
+#     Returns:
+#         Dictionary of composite score Series
+#     """
+#     get = lambda c: safe_get_attribute(df, c)
+#     composite_defs = get_composite_scores()
+#     composite_scores = {}
+#     
+#     for comp_name, comp_def in composite_defs.items():
+#         key_sum = sum(get(attr) for attr in comp_def['key_attrs'])
+#         green_sum = sum(get(attr) for attr in comp_def['green_attrs'])
+#         blue_sum = sum(get(attr) for attr in comp_def['blue_attrs'])
+#         
+#         total_weight = (len(comp_def['key_attrs']) * 5 + 
+#                        len(comp_def['green_attrs']) * 3 + 
+#                        len(comp_def['blue_attrs']) * 1)
+#         
+#         score = (((key_sum * 5) + (green_sum * 3) + (blue_sum * 1)) / total_weight).round(1)
+#         composite_scores[comp_name] = score
+#     
+#     logger.info(f"Computed {len(composite_scores)} composite scores")
+#     return composite_scores
 
 
 def compute_best_role_summary(df: pd.DataFrame, role_columns: List[str]) -> Dict[str, pd.Series]:
@@ -322,11 +322,11 @@ def process_fm_data(df: pd.DataFrame) -> pd.DataFrame:
     # Compute role scores
     role_scores = compute_role_scores(result_df)
     
-    # Compute composite scores
-    composite_scores = compute_composite_scores(result_df)
+    # Composite scores commented out - no longer needed
+    # composite_scores = compute_composite_scores(result_df)
     
     # Combine all new columns
-    new_columns = {**derived_attrs, **role_scores, **composite_scores}
+    new_columns = {**derived_attrs, **role_scores}
     
     # Add new columns to result DataFrame
     for col_name, col_data in new_columns.items():

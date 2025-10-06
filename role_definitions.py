@@ -164,8 +164,8 @@ FULL_ROLE_DESCRIPTIONS = {
     'RAUA': 'Raumdeuter Attack',
     'REGS': 'Regista Support',
     'RPS': 'Roaming Playmaker Support',
-    'SVS': 'Supportive Role Support',
-    'SVA': 'Supportive Role Attack',
+    'SVS': 'Segundo Volante Support',
+    'SVA': 'Segundo Volante Attack',
     'SSA': 'Shadow Striker Attack',
     'WMD': 'Wide Midfielder Defend',
     'WMS': 'Wide Midfielder Support',
@@ -174,8 +174,8 @@ FULL_ROLE_DESCRIPTIONS = {
     'WPA': 'Wide Playmaker Attack',
     'WTFS': 'Wide Target Forward Support',
     'WTFA': 'Wide Target Forward Attack',
-    'WS': 'Wide Support',
-    'WA': 'Wide Attack',
+    'WS': 'Winger Support',
+    'WA': 'Winger Attack',
     'PA': 'Poacher Attack',
     'PFD': 'Pressing Forward Defend',
     'PFS': 'Pressing Forward Support',
@@ -685,20 +685,20 @@ def get_expected_role_order() -> List[str]:
     ]
 
 
-def get_composite_scores() -> Dict[str, Dict[str, List[str]]]:
-    """Get composite score definitions (combinations of basic attributes)."""
-    return {
-        'fb': {
-            'key_attrs': ['Acc', 'Pac', 'Sta', 'Wor'],
-            'green_attrs': ['Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
-            'blue_attrs': ['Cro', 'Pas', 'Dec', 'Tea']
-        },
-        'cb': {
-            'key_attrs': ['Acc', 'Pac', 'Jum', 'Cmp'],
-            'green_attrs': ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-            'blue_attrs': ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec']
-        }
-    }
+# def get_composite_scores() -> Dict[str, Dict[str, List[str]]]:
+#     """Get composite score definitions (combinations of basic attributes)."""
+#     return {
+#         'fb': {
+#             'key_attrs': ['Acc', 'Pac', 'Sta', 'Wor'],
+#             'green_attrs': ['Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
+#             'blue_attrs': ['Cro', 'Pas', 'Dec', 'Tea']
+#         },
+#         'cb': {
+#             'key_attrs': ['Acc', 'Pac', 'Jum', 'Cmp'],
+#             'green_attrs': ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
+#             'blue_attrs': ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec']
+#         }
+#     }
 
 
 logger.info("Role definitions module loaded with all FM tactical roles")
