@@ -2,6 +2,7 @@
 # This module contains logic for parsing, analyzing, and assigning players to formations.
 
 import re
+from bs4 import BeautifulSoup
 
 ROLE_NAME_TO_CODE = {
     # Goalkeepers
@@ -35,18 +36,35 @@ def parse_formations(spec_text):
     return formations
 
 def analyze_formations(formations, players):
-    """Analyzes formations and calculates scores."""
+    """Analyze formations and rank them based on player suitability."""
     results = []
+
     for formation in formations:
-        assignment = assign_players_to_formation(formation, players)
-        total_score = sum(assign.get("score", 0) for assign in assignment)
-        avg_score = total_score / len(formation["positions"]) if formation["positions"] else 0
-        results.append({
-            "formation": formation["name"],
-            "avg_score": avg_score,
-            "total_score": total_score,
-            "assignments": assignment
-        })
+        total_score = 0
+        valid_positions = 0
+        assignments = []
+
+        for pos in formation["positions"]:
+            best_player = None
+            best_score = -1
+
+            for player in players:
+                if pos["position"] in player["Pos"]:  # Updated key from 'Position' to 'Pos'
+                    score = float(player.get(pos["role"], 0))  # Ensure score is a float
+                    if score > best_score:
+                        best_score = score
+                        best_player = player
+
+            if best_player:
+                total_score += best_score
+                valid_positions += 1
+                assignments.append({"position": pos["position"], "role": pos["role"], "player": best_player["Player"], "score": best_score})
+            else:
+                assignments.append({"position": pos["position"], "role": pos["role"], "player": None, "score": 0})
+
+        avg_score = total_score / len(formation["positions"])
+        results.append({"formation": formation["name"], "avg_score": avg_score, "total_score": total_score, "valid_positions": valid_positions, "assignments": assignments})
+
     return sorted(results, key=lambda x: x["avg_score"], reverse=True)
 
 def assign_players_to_formation(formation, players):
@@ -72,3 +90,57 @@ def assign_players_to_formation(formation, players):
 def is_player_eligible_for_position(player, position):
     """Checks if a player is eligible for a position."""
     return position.upper() in (pos.upper() for pos in player["pos"].split(","))
+
+def extract_player_data(html_file):
+    """Extract player data from the HTML file."""
+    with open(html_file, 'r', encoding='utf-8') as file:
+        soup = BeautifulSoup(file, 'html.parser')
+
+    table = soup.find('table', {'id': 'playerTable'})
+    players = []
+
+    if table:
+        headers = [th.text.strip() for th in table.find_all('th')]
+        rows = table.find('tbody').find_all('tr')
+
+        for row in rows:
+            cells = row.find_all('td')
+            player = {headers[i]: cells[i].text.strip() for i in range(len(cells))}
+            players.append(player)
+
+    return players
+
+def extract_formation_data(html_file):
+    """Extract formation data from the HTML file."""
+    with open(html_file, 'r', encoding='utf-8') as file:
+        soup = BeautifulSoup(file, 'html.parser')
+
+    textarea = soup.find('textarea', {'id': 'formationSpec'})
+    if textarea:
+        return textarea.text.strip()
+
+    return ""
+
+def parse_formations_file(file_path):
+    """Parse the formations.txt file to retrieve formation details."""
+    formations = []
+    with open(file_path, 'r', encoding='utf-8') as file:
+        current_formation = None
+
+        for line in file:
+            line = line.strip()
+            if not line:
+                continue
+
+            if line[0].isdigit() and '.' in line:
+                if current_formation:
+                    formations.append(current_formation)
+                current_formation = {"name": line, "positions": []}
+            elif '=' in line and current_formation:
+                position, role = map(str.strip, line.split('='))
+                current_formation["positions"].append({"position": position, "role": role})
+
+        if current_formation:
+            formations.append(current_formation)
+
+    return formations
