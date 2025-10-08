@@ -477,7 +477,7 @@ class HTMLGenerator:
             }
             
             // Re-apply current sort after filtering
-            setTimeout(() => reapplyCurrentSort(), 100);
+            setTimeout(() => { reapplyCurrentSort(); recomputeBestRoleAndScore(); }, 100);
         }
 
         function clearFilters(btn) {
@@ -489,7 +489,7 @@ class HTMLGenerator:
             enableAllRoles();
             
             // Re-apply current sort after clearing filters
-            setTimeout(() => reapplyCurrentSort(), 100);
+            setTimeout(() => { reapplyCurrentSort(); recomputeBestRoleAndScore(); }, 100);
         }
 
         // Color code score cells after page loads
@@ -518,6 +518,8 @@ class HTMLGenerator:
                 
                 // Add sorting functionality to table headers
                 initializeTableSorting();
+                // Recompute Best Role/Best Score columns based on visible role columns
+                try { recomputeBestRoleAndScore(); } catch (e) { /* ignore */ }
                 
             } catch (e) {
                 console.error('Coloring error:', e);
@@ -732,8 +734,72 @@ class HTMLGenerator:
                 });
                 
                 // Re-apply current sort after column visibility change
-                setTimeout(() => reapplyCurrentSort(), 50);
+                setTimeout(() => { reapplyCurrentSort(); recomputeBestRoleAndScore(); }, 50);
             }
+        }
+
+        // Recompute Best Role and Best Score for each visible row using only visible role columns
+        function recomputeBestRoleAndScore() {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            // Identify meta columns to skip when scanning role columns (case-insensitive)
+            // Also explicitly skip columns that contain speed/str/work/jump in the header
+            const metaNames = ['player','name','age','club','pos','position','best score','best_role','best role','value','wage','nat','info','pers','media','l.foot','r.foot'];
+
+            // Find index of Best Score and Best Role columns (if present)
+            const bestScoreIdx = headers.findIndex(th => th.textContent.trim().toLowerCase() === 'best score');
+            const bestRoleIdx = headers.findIndex(th => th.textContent.trim().toLowerCase() === 'best role');
+
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            rows.forEach(row => {
+                if (row.style.display === 'none') return; // only consider visible rows
+
+                let bestScore = -Infinity;
+                let bestRoles = [];
+
+                headers.forEach((th, idx) => {
+                    // Skip meta columns, explicitly excluded stats (speed/str/work/jump), and non-visible columns
+                    const headerText = (th.textContent || '').trim();
+                    if (!headerText) return;
+                    const headerLower = headerText.toLowerCase();
+                    if (metaNames.includes(headerLower)) return;
+                    // Exclude any header that contains the substrings for unwanted stats
+                    if (headerLower.includes('spd') || headerLower.includes('speed') || headerLower === 'str' || headerLower.includes('str ') || headerLower === 'work' || headerLower.includes('work ') || headerLower === 'jmp' || headerLower.includes('jump')) return;
+                    if (th.style.display === 'none') return;
+
+                    // Skip Best Score/Best Role target columns
+                    if (idx === bestScoreIdx || idx === bestRoleIdx) return;
+
+                    const cell = row.cells[idx];
+                    if (!cell || cell.style.display === 'none') return;
+                    const val = parseNumberLike(cell.textContent.trim());
+                    if (!isNaN(val)) {
+                        if (val > bestScore) {
+                            bestScore = val;
+                            bestRoles = [headerText];
+                        } else if (val === bestScore) {
+                            // tie: add to list (avoid duplicates)
+                            if (!bestRoles.includes(headerText)) bestRoles.push(headerText);
+                        }
+                    }
+                });
+
+                // Update Best Score and Best Role cells if columns exist
+                if (bestScoreIdx >= 0 && row.cells[bestScoreIdx]) {
+                    row.cells[bestScoreIdx].textContent = (bestScore === -Infinity) ? '' : bestScore.toFixed(1);
+                }
+                if (bestRoleIdx >= 0 && row.cells[bestRoleIdx]) {
+                    // Cap roles to max 3 and format nicely
+                    if (bestRoles.length === 0) {
+                        row.cells[bestRoleIdx].textContent = '';
+                    } else {
+                        const capped = bestRoles.slice(0, 3);
+                        row.cells[bestRoleIdx].textContent = capped.join(', ');
+                    }
+                }
+            });
         }
 
         // Make functions globally available
