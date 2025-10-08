@@ -719,7 +719,20 @@ class HTMLGenerator:
 
             // Find column index by code
             const headers = Array.from(table.querySelectorAll('thead th'));
-            const colIndex = headers.findIndex(th => th.textContent.trim() === code);
+            // Find header that matches the role code or its display name/title
+            const colIndex = headers.findIndex(th => {
+                const txt = th.textContent.trim();
+                if (!txt) return false;
+                if (txt === code) return true;
+                // Match against ROLE_DISPLAY_MAP (friendly short names)
+                if (typeof ROLE_DISPLAY_MAP !== 'undefined' && ROLE_DISPLAY_MAP[code] && txt === ROLE_DISPLAY_MAP[code]) return true;
+                // Match against ROLE_TITLES (full descriptions)
+                if (typeof ROLE_TITLES !== 'undefined' && ROLE_TITLES[code] && txt === ROLE_TITLES[code]) return true;
+                // Also try uppercase variants
+                if (txt.toUpperCase() === code.toUpperCase()) return true;
+                if (typeof ROLE_DISPLAY_MAP !== 'undefined' && ROLE_DISPLAY_MAP[code] && txt.toUpperCase() === ROLE_DISPLAY_MAP[code].toUpperCase()) return true;
+                return false;
+            });
             
             if (colIndex >= 0) {
                 // Toggle header visibility
