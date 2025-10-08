@@ -734,8 +734,36 @@ class HTMLGenerator:
                 });
                 
                 // Re-apply current sort after column visibility change
-                setTimeout(() => { reapplyCurrentSort(); recomputeBestRoleAndScore(); }, 50);
+                setTimeout(() => { reapplyCurrentSort(); recomputeBestRoleAndScore(); addHeaderTooltips(); }, 50);
             }
+        }
+
+        // Attach friendly-name tooltips to header cells using ROLE_DISPLAY_MAP and ROLE_TITLES
+        function addHeaderTooltips() {
+            const table = document.getElementById('playerTable');
+            if (!table) return;
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            headers.forEach(th => {
+                const code = (th.textContent || '').trim();
+                if (!code) return;
+                // Prefer a friendly display name from ROLE_DISPLAY_MAP (lowerkey match), otherwise use ROLE_TITLES
+                const keyLower = code.toLowerCase();
+                let title = '';
+                // ROLE_DISPLAY_MAP maps original role codes to short titles in Python; in JS it's the same keys
+                if (ROLE_DISPLAY_MAP && ROLE_DISPLAY_MAP[code]) {
+                    title = ROLE_DISPLAY_MAP[code];
+                } else if (ROLE_TITLES && ROLE_TITLES[code]) {
+                    title = ROLE_TITLES[code];
+                } else if (ROLE_TITLES && ROLE_TITLES[code.toUpperCase()]) {
+                    title = ROLE_TITLES[code.toUpperCase()];
+                }
+
+                if (title) {
+                    th.setAttribute('title', title);
+                } else {
+                    th.removeAttribute('title');
+                }
+            });
         }
 
         // Recompute Best Role and Best Score for each visible row using only visible role columns
@@ -816,13 +844,15 @@ class HTMLGenerator:
         return js
     
     def _generate_full_html(self, table_html: str, legend_html: str) -> str:
-    # Generate the complete HTML document.
-        
+        """Generate the complete HTML document."""
+
         css_styles = self._generate_css_styles()
         javascript = self._generate_javascript()
-        
+
         role_titles_json = json.dumps(FULL_ROLE_DESCRIPTIONS)
         position_role_groups_json = json.dumps(POSITION_ROLE_GROUPS)
+        role_display_json = json.dumps(ROLE_DISPLAY_NAMES)
+
         html_template = (
             f'<!DOCTYPE html>'
             f'<html>'
@@ -845,6 +875,7 @@ class HTMLGenerator:
             f'<script>'
             f'const ROLE_TITLES = {role_titles_json};'
             f'const POSITION_ROLE_GROUPS = {position_role_groups_json};'
+            f'const ROLE_DISPLAY_MAP = {role_display_json};'
             f'{javascript}'
             f'</script>'
             f'</body>'
