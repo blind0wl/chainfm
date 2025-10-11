@@ -193,4 +193,4 @@ The modular architecture makes the tool easy to extend:
 
 ## License
 
-This tool is provided as-is for FM community use. Please respect Sports Interactive's terms of service when using FM data.
+This tool is provided as-is for FM community use. Please respect Sports Interactive's terms of service when using FM data. This project was inspired from https://github.com/squirrelplays and their previous work with a local python script for FM24 stat weighting.
