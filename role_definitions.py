@@ -192,474 +192,94 @@ def get_role_definitions() -> Dict[str, RoleDefinition]:
     """Get all role definitions with their calculation parameters."""
     
     roles = {}
-    
-    # Goalkeeper roles
-    roles['gkd'] = RoleDefinition('gkd', 'GKD', 
-        ['Agi', 'Ref'], 
-        ['Aer', 'Cmd', 'Han', 'Kic', 'Cnt', 'Pos'], 
-        ['1v1', 'Thr', 'Ant', 'Dec'])
-    
-    roles['skd'] = RoleDefinition('skd', 'SKD',
-        ['Agi', 'Ref'],
-        ['Cmd', 'Kic', '1v1', 'Ant', 'Cnt', 'Pos'],
-        ['Aer', 'Fir', 'Han', 'Pas', 'TRO', 'Dec', 'Vis', 'Acc'])
-    
-    roles['sks'] = RoleDefinition('sks', 'SKS',
-        ['Agi', 'Ref'],
-        ['Cmd', 'Kic', '1v1', 'Ant', 'Cnt', 'Pos'],
-        ['Aer', 'Fir', 'Han', 'Pas', 'TRO', 'Dec', 'Vis', 'Acc'])
-    
-    roles['ska'] = RoleDefinition('ska', 'SKA',
-        ['Agi', 'Ref'],
-        ['Cmd', 'Kic', '1v1', 'Ant', 'Cnt', 'Pos'],
-        ['Aer', 'Fir', 'Han', 'Pas', 'TRO', 'Dec', 'Vis', 'Acc'])
-    
-    # Defender roles - Ball Playing Defenders
-    roles['bpdd'] = RoleDefinition('bpdd', 'BPDD',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Pas', 'Tck', 'Pos', 'Str'],
-        ['Fir', 'Tec', 'Agg', 'Ant', 'Bra', 'Cnt', 'Dec', 'Vis'])
-    
-    roles['bpds'] = RoleDefinition('bpds', 'BPDS',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Pas', 'Tck', 'Pos', 'Str', 'Agg', 'Bra', 'Dec'],
-        ['Fir', 'Tec', 'Ant', 'Cnt', 'Vis', 'Mar'])
-    
-    roles['bpdc'] = RoleDefinition('bpdc', 'BPDC',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Mar', 'Pas', 'Tck', 'Pos', 'Ant', 'Cnt', 'Dec'],
-        ['Fir', 'Tec', 'Bra', 'Vis', 'Str', 'Hea'])
-    
-    # Central Defenders
-    roles['cdd'] = RoleDefinition('cdd', 'CDD',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['cds'] = RoleDefinition('cds', 'CDS',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Tck', 'Agg', 'Bra', 'Dec', 'Pos', 'Str'],
-        ['Mar', 'Ant', 'Cnt'])
-    
-    roles['cdc'] = RoleDefinition('cdc', 'CDC',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Mar', 'Tck', 'Ant', 'Cnt', 'Dec', 'Pos'],
-        ['Hea', 'Bra', 'Str'])
-    
-    # Fullback roles
-    roles['fbd'] = RoleDefinition('fbd', 'FBD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
-        ['Cro', 'Pas', 'Dec', 'Tea'])
-    
-    roles['fbs'] = RoleDefinition('fbs', 'FBS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
-        ['Cro', 'Pas', 'Dec', 'Tea'])
-    
-    roles['fba'] = RoleDefinition('fba', 'FBA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
-        ['Fir', 'Pas', 'Dec', 'Tea', 'OtB'])
-    
-    # Wing Back roles
-    roles['wbd'] = RoleDefinition('wbd', 'WBD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Agi', 'Bal'])
-    
-    roles['wbs'] = RoleDefinition('wbs', 'WBS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Agi', 'Bal'])
-    
-    roles['wba'] = RoleDefinition('wba', 'WBA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Agi', 'Bal'])
-    
-    # Complete Wing Back roles
-    roles['cwbs'] = RoleDefinition('cwbs', 'CWBS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Tea', 'Agi', 'Bal'])
-    
-    roles['cwba'] = RoleDefinition('cwba', 'CWBA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Tea', 'Agi', 'Bal'])
-    
-    # Inverted roles
-    roles['ifbd'] = RoleDefinition('ifbd', 'IFBD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Mar', 'Pas', 'Tck', 'Tec', 'Ant', 'Cnt', 'Dec'],
-        ['Fir', 'Cmp', 'OtB', 'Pos', 'Vis'])
-    
-    roles['iwbd'] = RoleDefinition('iwbd', 'IWBD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Mar', 'Tck', 'Tec', 'Ant', 'Cnt', 'Dec'],
-        ['Fir', 'Pas', 'Cmp', 'OtB', 'Pos', 'Vis'])
-    
-    roles['iwbs'] = RoleDefinition('iwbs', 'IWBS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Mar', 'Tck', 'Tec', 'Ant', 'Cnt', 'Dec'],
-        ['Fir', 'Pas', 'Cmp', 'OtB', 'Pos', 'Vis'])
-    
-    roles['iwba'] = RoleDefinition('iwba', 'IWBA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Cmp', 'Pos', 'Vis'])
-    
-    # Additional defender variants
-    roles['ld'] = RoleDefinition('ld', 'LD',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['ls'] = RoleDefinition('ls', 'LS',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    # No-nonsense defenders
-    roles['ncbd'] = RoleDefinition('ncbd', 'NCBD',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['ncbs'] = RoleDefinition('ncbs', 'NCBS',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['ncbc'] = RoleDefinition('ncbc', 'NCBC',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['nfbd'] = RoleDefinition('nfbd', 'NFBD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Mar', 'Tck', 'Ant', 'Cnt', 'Pos'],
-        ['Cro', 'Pas', 'Dec', 'Tea'])
-    
-    # Wide centre backs
-    roles['wcbd'] = RoleDefinition('wcbd', 'WCBD',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['wcbs'] = RoleDefinition('wcbs', 'WCBS',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    roles['wcba'] = RoleDefinition('wcba', 'WCBA',
-        ['Acc', 'Pac', 'Jum', 'Cmp'],
-        ['Hea', 'Mar', 'Tck', 'Pos', 'Str'],
-        ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
-    
-    # Midfielder roles - Advanced Playmaker
-    roles['aps'] = RoleDefinition('aps', 'APS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Tea', 'Vis'],
-        ['Dri', 'Ant', 'Fla', 'Agi'])
-    
-    roles['apa'] = RoleDefinition('apa', 'APA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Tea', 'Vis'],
-        ['Dri', 'Ant', 'Fla', 'Agi'])
-    
-    # Anchor Man
-    roles['ad'] = RoleDefinition('ad', 'AD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Mar', 'Tck', 'Ant', 'Cnt', 'Dec', 'Pos'],
-        ['Cmp', 'Tea', 'Str'])
-    
-    # Attacking Midfielder
-    roles['ams'] = RoleDefinition('ams', 'AMS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Lon', 'Pas', 'Tec', 'Ant', 'Dec', 'Fla', 'OtB'],
-        ['Dri', 'Cmp', 'Vis', 'Agi'])
-    
-    roles['ama'] = RoleDefinition('ama', 'AMA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fir', 'Lon', 'Pas', 'Tec', 'Ant', 'Dec', 'Fla', 'OtB'],
-        ['Fin', 'Cmp', 'Vis', 'Agi'])
-    
-    # Ball Winning Midfielder
-    roles['bwmd'] = RoleDefinition('bwmd', 'BWMD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Agg', 'Ant', 'Tea'],
-        ['Mar', 'Bra', 'Cnt', 'Pos', 'Agi', 'Str'])
-    
-    roles['bwms'] = RoleDefinition('bwms', 'BWMS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Agg', 'Ant', 'Tea'],
-        ['Mar', 'Pas', 'Bra', 'Cnt', 'Agi', 'Str'])
-    
-    # Box to Box Midfielder
-    roles['b2bs'] = RoleDefinition('b2bs', 'B2BS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Pas', 'Tck', 'OtB', 'Tea'],
-        ['Dri', 'Fin', 'Fir', 'Lon', 'Tec', 'Agg', 'Ant', 'Cmp', 'Dec', 'Pos', 'Bal', 'Str'])
-    
-    # Carrilero
-    roles['cars'] = RoleDefinition('cars', 'CARS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Fir', 'Pas', 'Tck', 'Dec', 'Pos', 'Tea'],
-        ['Tec', 'Ant', 'Cmp', 'Cnt', 'OtB', 'Vis'])
-    
-    # Central Midfielder
-    roles['cmd'] = RoleDefinition('cmd', 'CMD',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Tck', 'Cnt', 'Dec', 'Pos', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Tec', 'Agg', 'Ant', 'Cmp'])
-    
-    roles['cms'] = RoleDefinition('cms', 'CMS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Pas', 'Tck', 'Dec', 'Tea'],
-        ['Tec', 'Ant', 'Cmp', 'Cnt', 'OtB', 'Vis'])
-    
-    roles['cma'] = RoleDefinition('cma', 'CMA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Pas', 'Dec', 'OtB'],
-        ['Lon', 'Tck', 'Tec', 'Ant', 'Cmp', 'Tea', 'Vis'])
-    
-    # Deep Lying Playmaker
-    roles['dlpd'] = RoleDefinition('dlpd', 'DLPD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Tea', 'Vis'],
-        ['Tck', 'Ant', 'Pos', 'Bal'])
-    
-    roles['dlps'] = RoleDefinition('dlps', 'DLPS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Tea', 'Vis'],
-        ['Ant', 'OtB', 'Pos', 'Bal'])
-    
-    # Defensive Midfielder
-    roles['dmd'] = RoleDefinition('dmd', 'DMD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Mar', 'Pas', 'Agg', 'Cmp', 'Str', 'Dec'])
-    
-    roles['dms'] = RoleDefinition('dms', 'DMS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Agg', 'Cmp', 'Dec', 'Str'])
-    
-    # Defensive Winger
-    roles['dwd'] = RoleDefinition('dwd', 'DWD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Mar', 'Pas', 'Agg', 'Cmp', 'Str', 'Dec'])
-    
-    roles['dws'] = RoleDefinition('dws', 'DWS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Agg', 'Cmp', 'Dec', 'Str'])
-    
-    # Enganche
-    roles['engs'] = RoleDefinition('engs', 'ENGS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Vis'],
-        ['Dri', 'Ant', 'Fla', 'OtB', 'Tea', 'Agi'])
-    
-    # Half Back
-    roles['hbd'] = RoleDefinition('hbd', 'HBD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Agg', 'Ant', 'Tea'],
-        ['Mar', 'Bra', 'Cnt', 'Pos', 'Agi', 'Str'])
-    
-    # Inside Forward
-    roles['ifs'] = RoleDefinition('ifs', 'IFS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fin', 'Fir', 'Tec', 'OtB', 'Agi'],
-        ['Lon', 'Pas', 'Ant', 'Cmp', 'Fla', 'Vis', 'Bal'])
-    
-    roles['ifa'] = RoleDefinition('ifa', 'IFA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fin', 'Fir', 'Tec', 'Ant', 'OtB', 'Agi'],
-        ['Lon', 'Pas', 'Cmp', 'Fla', 'Bal'])
-    
-    # Inverted Winger
-    roles['iws'] = RoleDefinition('iws', 'IWS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Dec', 'OtB'],
-        ['Fir', 'Cmp', 'Vis', 'Agi', 'Bal'])
-    
-    roles['iwa'] = RoleDefinition('iwa', 'IWA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Dec', 'OtB'],
-        ['Fin', 'Fir', 'Cmp', 'Vis', 'Agi', 'Bal'])
-    
-    # Mezzala
-    roles['mezs'] = RoleDefinition('mezs', 'MEZS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Pas', 'Tec', 'Dec', 'OtB'],
-        ['Dri', 'Fir', 'Lon', 'Tck', 'Ant', 'Cmp', 'Vis', 'Bal'])
-    
-    roles['meza'] = RoleDefinition('meza', 'MEZA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Dec', 'OtB', 'Vis'],
-        ['Fin', 'Fir', 'Lon', 'Ant', 'Cmp', 'Fla', 'Bal'])
-    
-    # Raumdeuter
-    roles['raua'] = RoleDefinition('raua', 'RAUA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Ant', 'Dec', 'OtB'],
-        ['Cmp', 'Vis', 'Agi', 'Bal'])
-    
-    # Regista
-    roles['regs'] = RoleDefinition('regs', 'REGS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Tea', 'Vis'],
-        ['Ant', 'OtB', 'Pos', 'Bal'])
-    
-    # Roaming Playmaker
-    roles['rps'] = RoleDefinition('rps', 'RPS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Tea', 'Vis'],
-        ['Tck', 'Ant', 'Pos', 'Bal'])
-    
-    # Segundo Volante
-    roles['svs'] = RoleDefinition('svs', 'SVS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis'],
-        ['Ant', 'Fla', 'Agi', 'Bal'])
-    
-    roles['sva'] = RoleDefinition('sva', 'SVA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis'],
-        ['Fin', 'Ant', 'Fla', 'Agi', 'Bal'])
-    
-    # Shadow Striker
-    roles['ssa'] = RoleDefinition('ssa', 'SSA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis'],
-        ['Fin', 'Ant', 'Fla', 'Agi', 'Bal'])
-    
-    # Wide Midfielder
-    roles['wmd'] = RoleDefinition('wmd', 'WMD',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Mar', 'Pas', 'Agg', 'Cmp', 'Str', 'Dec'])
-    
-    roles['wms'] = RoleDefinition('wms', 'WMS',
-        ['Wor', 'Sta', 'Acc', 'Pac'],
-        ['Tck', 'Ant', 'Cnt', 'Pos', 'Tea'],
-        ['Fir', 'Mar', 'Pas', 'Agg', 'Cmp', 'Dec', 'Str'])
-    
-    roles['wma'] = RoleDefinition('wma', 'WMA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Dec', 'OtB'],
-        ['Fin', 'Fir', 'Cmp', 'Vis', 'Agi', 'Bal'])
-    
-    # Wide Playmaker
-    roles['wps'] = RoleDefinition('wps', 'WPS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis'],
-        ['Fin', 'Fir', 'Lon', 'Ant', 'Fla', 'Bal'])
-    
-    roles['wpa'] = RoleDefinition('wpa', 'WPA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis'],
-        ['Fin', 'Fir', 'Lon', 'Ant', 'Fla', 'Bal'])
-    
-    # Wide Target Forward
-    roles['wtfs'] = RoleDefinition('wtfs', 'WTFS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fin', 'Fir', 'Tec', 'OtB', 'Agi'],
-        ['Lon', 'Pas', 'Ant', 'Cmp', 'Fla', 'Vis', 'Bal'])
-    
-    roles['wtfa'] = RoleDefinition('wtfa', 'WTFA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Dri', 'Fin', 'Fir', 'Tec', 'Ant', 'OtB', 'Agi'],
-        ['Lon', 'Pas', 'Cmp', 'Fla', 'Bal'])
-    
-    # Winger
-    roles['ws'] = RoleDefinition('ws', 'WS',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tck', 'Tec', 'OtB'],
-        ['Fir', 'Mar', 'Pas', 'Ant', 'Cnt', 'Dec', 'Fla', 'Pos', 'Tea', 'Agi', 'Bal'])
-    
-    roles['wa'] = RoleDefinition('wa', 'WA',
-        ['Acc', 'Pac', 'Sta', 'Wor'],
-        ['Cro', 'Dri', 'Tec', 'OtB'],
-        ['Fir', 'Pas', 'Ant', 'Dec', 'Fla', 'Tea', 'Agi', 'Bal'])
-    
-    # Forward roles - Advanced Forward
-    roles['afa'] = RoleDefinition('afa', 'AFA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Dri', 'Fir', 'Tec', 'Cmp', 'OtB'],
-        ['Pas', 'Ant', 'Dec', 'Wor', 'Agi', 'Bal', 'Sta'])
-    
-    # Complete Forward
-    roles['cfs'] = RoleDefinition('cfs', 'CFS',
-        ['Acc', 'Pac', 'Fin'],
-        ['Dri', 'Fir', 'Hea', 'Lon', 'Pas', 'Tec', 'Ant', 'Cmp', 'Dec', 'OtB', 'Vis', 'Agi', 'Str'],
-        ['Tea', 'Wor', 'Bal', 'Jum', 'Sta'])
-    
-    roles['cfa'] = RoleDefinition('cfa', 'CFA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Dri', 'Fir', 'Hea', 'Tec', 'Ant', 'Cmp', 'OtB', 'Agi', 'Str'],
-        ['Lon', 'Pas', 'Dec', 'Tea', 'Vis', 'Wor', 'Bal', 'Jum', 'Sta'])
-    
-    # Deep Lying Forward
-    roles['dlfs'] = RoleDefinition('dlfs', 'DLFS',
-        ['Acc', 'Pac', 'Fin'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Tea'],
-        ['Ant', 'Fla', 'Vis', 'Bal', 'Str'])
-    
-    roles['dlfa'] = RoleDefinition('dlfa', 'DLFA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Tea'],
-        ['Dri', 'Ant', 'Fla', 'Vis', 'Bal', 'Str'])
-    
-    # False Nine
-    roles['f9s'] = RoleDefinition('f9s', 'F9S',
-        ['Acc', 'Pac', 'Fin'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'OtB', 'Vis', 'Agi'],
-        ['Ant', 'Fla', 'Tea', 'Bal'])
-    
-    # Poacher
-    roles['pa'] = RoleDefinition('pa', 'PA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Ant', 'Cmp', 'OtB'],
-        ['Fir', 'Hea', 'Tec', 'Dec'])
-    
-    # Pressing Forward
-    roles['pfd'] = RoleDefinition('pfd', 'PFD',
-        ['Acc', 'Pac', 'Fin'],
-        ['Agg', 'Ant', 'Bra', 'OtB', 'Tea', 'Wor', 'Sta'],
-        ['Fir', 'Cmp', 'Cnt', 'Dec', 'Agi', 'Bal', 'Str'])
-    
-    roles['pfs'] = RoleDefinition('pfs', 'PFS',
-        ['Acc', 'Pac', 'Fin'],
-        ['Agg', 'Ant', 'Bra', 'OtB', 'Tea', 'Wor', 'Sta'],
-        ['Fir', 'Cmp', 'Cnt', 'Dec', 'Agi', 'Bal', 'Str'])
-    
-    roles['pfa'] = RoleDefinition('pfa', 'PFA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Agg', 'Ant', 'Bra', 'OtB', 'Tea', 'Wor', 'Sta'],
-        ['Fir', 'Cmp', 'Cnt', 'Dec', 'Agi', 'Bal', 'Str'])
-    
-    # Target Forward
-    roles['tfs'] = RoleDefinition('tfs', 'TFS',
-        ['Acc', 'Pac', 'Fin'],
-        ['Hea', 'Bra', 'Cmp', 'OtB', 'Bal', 'Jum', 'Str'],
-        ['Fir', 'Agg', 'Ant', 'Dec', 'Tea'])
-    
-    roles['tfa'] = RoleDefinition('tfa', 'TFA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Hea', 'Bra', 'Cmp', 'OtB', 'Bal', 'Jum', 'Str'],
-        ['Fir', 'Agg', 'Ant', 'Dec', 'Tea'])
-    
-    # Trequartista
-    roles['trea'] = RoleDefinition('trea', 'TREA',
-        ['Acc', 'Pac', 'Fin'],
-        ['Dri', 'Fir', 'Pas', 'Tec', 'Cmp', 'Dec', 'Fla', 'OtB', 'Vis'],
-        ['Ant', 'Agi', 'Bal'])
-    
+
+    # Roles imported from roles_summary.csv
+    roles['afa'] = RoleDefinition('afa', 'AFA', ['Acc', 'Fin', 'Pac'], ['Cmp', 'Dri', 'Fir', 'OtB', 'Tec'], ['Agi', 'Ant', 'Bal', 'Dec', 'Pas', 'Sta', 'Wor'])
+    roles['apa'] = RoleDefinition('apa', 'APA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec', 'Vis'], ['Agi', 'Ant', 'Dri', 'Fla'])
+    roles['aps'] = RoleDefinition('aps', 'APS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec', 'Vis'], ['Agi', 'Ant', 'Dri', 'Fla'])
+    roles['ad'] = RoleDefinition('ad', 'AD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Dec', 'Mar', 'Pos', 'Tck'], ['Cmp', 'Str', 'Tea'])
+    roles['ama'] = RoleDefinition('ama', 'AMA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Dec', 'Dri', 'Fir', 'Fla', 'Lon', 'OtB', 'Pas', 'Tec'], ['Agi', 'Cmp', 'Fin', 'Vis'])
+    roles['ams'] = RoleDefinition('ams', 'AMS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Dec', 'Fir', 'Fla', 'Lon', 'OtB', 'Pas', 'Tec'], ['Agi', 'Cmp', 'Dri', 'Vis'])
+    roles['bpdc'] = RoleDefinition('bpdc', 'BPDC', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Ant', 'Cnt', 'Dec', 'Mar', 'Pas', 'Pos', 'Tck'], ['Bra', 'Fir', 'Hea', 'Str', 'Tec', 'Vis'])
+    roles['bpdd'] = RoleDefinition('bpdd', 'BPDD', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Hea', 'Mar', 'Pas', 'Pos', 'Str', 'Tck'], ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec', 'Fir', 'Tec', 'Vis'])
+    roles['bpds'] = RoleDefinition('bpds', 'BPDS', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Agg', 'Bra', 'Dec', 'Hea', 'Pas', 'Pos', 'Str', 'Tck'], ['Ant', 'Cnt', 'Fir', 'Mar', 'Tec', 'Vis'])
+    roles['bwmd'] = RoleDefinition('bwmd', 'BWMD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agg', 'Ant', 'Tck', 'Tea'], ['Agi', 'Bra', 'Cnt', 'Mar', 'Pos', 'Str'])
+    roles['bwms'] = RoleDefinition('bwms', 'BWMS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agg', 'Ant', 'Tck', 'Tea'], ['Agi', 'Bra', 'Cnt', 'Mar', 'Pas', 'Str'])
+    roles['b2bs'] = RoleDefinition('b2bs', 'B2BS', ['Acc', 'Pac', 'Sta', 'Wor'], ['OtB', 'Pas', 'Tck', 'Tea'], ['Agg', 'Ant', 'Bal', 'Cmp', 'Dec', 'Dri', 'Fin', 'Fir', 'Lon', 'Pos', 'Str', 'Tec'])
+    roles['cars'] = RoleDefinition('cars', 'CARS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'Fir', 'Pas', 'Pos', 'Tck', 'Tea'], ['Ant', 'Cnt', 'Cmp', 'OtB', 'Tec', 'Vis'])
+    roles['cdc'] = RoleDefinition('cdc', 'CDC', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Ant', 'Cnt', 'Dec', 'Mar', 'Pos', 'Tck'], ['Bra', 'Hea', 'Str'])
+    roles['cdd'] = RoleDefinition('cdd', 'CDD', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Hea', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Ant', 'Bra', 'Cnt', 'Dec'])
+    roles['cds'] = RoleDefinition('cds', 'CDS', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Agg', 'Bra', 'Dec', 'Hea', 'Pos', 'Str', 'Tck'], ['Ant', 'Cnt', 'Mar'])
+    roles['cma'] = RoleDefinition('cma', 'CMA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'Fir', 'OtB', 'Pas'], ['Ant', 'Cmp', 'Lon', 'Tck', 'Tea', 'Tec', 'Vis'])
+    roles['cmd'] = RoleDefinition('cmd', 'CMD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cnt', 'Dec', 'Pos', 'Tck', 'Tea'], ['Agg', 'Ant', 'Cmp', 'Fir', 'Mar', 'Pas', 'Tec'])
+    roles['cms'] = RoleDefinition('cms', 'CMS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'Fir', 'Pas', 'Tck', 'Tea'], ['Ant', 'Cnt', 'Cmp', 'OtB', 'Tec', 'Vis'])
+    roles['cfa'] = RoleDefinition('cfa', 'CFA', ['Acc', 'Fin', 'Pac'], ['Agi', 'Ant', 'Cmp', 'Dri', 'Fir', 'Hea', 'OtB', 'Str', 'Tec'], ['Bal', 'Dec', 'Jum', 'Lon', 'Pas', 'Sta', 'Tea', 'Vis', 'Wor'])
+    roles['cfs'] = RoleDefinition('cfs', 'CFS', ['Acc', 'Fin', 'Pac'], ['Agi', 'Ant', 'Cmp', 'Dec', 'Dri', 'Fir', 'Hea', 'Lon', 'OtB', 'Pas', 'Str', 'Tec', 'Vis'], ['Bal', 'Jum', 'Sta', 'Tea', 'Wor'])
+    roles['cwba'] = RoleDefinition('cwba', 'CWBA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'Dri', 'Fla', 'OtB', 'Tea', 'Tec'], ['Agi', 'Ant', 'Bal', 'Dec', 'Fir', 'Mar', 'Pas', 'Pos', 'Tck'])
+    roles['cwbs'] = RoleDefinition('cwbs', 'CWBS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'Dri', 'OtB', 'Tea', 'Tec'], ['Agi', 'Ant', 'Bal', 'Dec', 'Fir', 'Fla', 'Mar', 'Pas', 'Pos', 'Tck'])
+    roles['dlfa'] = RoleDefinition('dlfa', 'DLFA', ['Acc', 'Fin', 'Pac'], ['Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec'], ['Ant', 'Bal', 'Dri', 'Fla', 'Str', 'Vis'])
+    roles['dlfs'] = RoleDefinition('dlfs', 'DLFS', ['Acc', 'Fin', 'Pac'], ['Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec'], ['Ant', 'Bal', 'Fla', 'Str', 'Vis'])
+    roles['dlpd'] = RoleDefinition('dlpd', 'DLPD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Pas', 'Tea', 'Tec', 'Vis'], ['Ant', 'Bal', 'Pos', 'Tck'])
+    roles['dlps'] = RoleDefinition('dlps', 'DLPS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Pas', 'Tea', 'Tec', 'Vis'], ['Ant', 'Bal', 'OtB', 'Pos'])
+    roles['dmd'] = RoleDefinition('dmd', 'DMD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Pos', 'Tck', 'Tea'], ['Agg', 'Cmp', 'Dec', 'Mar', 'Pas'])
+    roles['dms'] = RoleDefinition('dms', 'DMS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Pos', 'Tck', 'Tea'], ['Agg', 'Cmp', 'Dec', 'Fir', 'Mar', 'Pas', 'Str'])
+    roles['dwd'] = RoleDefinition('dwd', 'DWD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'OtB', 'Pos', 'Tea', 'Tec'], ['Agg', 'Cnt', 'Cro', 'Dec', 'Dri', 'Fir', 'Mar', 'Tck'])
+    roles['dws'] = RoleDefinition('dws', 'DWS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'OtB', 'Tea', 'Tec'], ['Agg', 'Ant', 'Cnt', 'Cmp', 'Dec', 'Dri', 'Fir', 'Mar', 'Pas', 'Pos', 'Tck'])
+    roles['engs'] = RoleDefinition('engs', 'ENGS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Pas', 'Tec', 'Vis'], ['Agi', 'Ant', 'Dri', 'Fla', 'OtB', 'Tea'])
+    roles['f9s'] = RoleDefinition('f9s', 'F9S', ['Acc', 'Fin', 'Pac'], ['Agi', 'Cmp', 'Dec', 'Dri', 'Fir', 'OtB', 'Pas', 'Tec', 'Vis'], ['Ant', 'Bal', 'Fla', 'Tea'])
+    roles['fba'] = RoleDefinition('fba', 'FBA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cro', 'Mar', 'Pos', 'Tck', 'Tea'], ['Agi', 'Cnt', 'Dec', 'Dri', 'Fir', 'OtB', 'Pas', 'Tec'])
+    roles['fbd'] = RoleDefinition('fbd', 'FBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Mar', 'Pos', 'Tck'], ['Cro', 'Dec', 'Pas', 'Tea'])
+    roles['fbs'] = RoleDefinition('fbs', 'FBS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Mar', 'Pos', 'Tck', 'Tea'], ['Cro', 'Dec', 'Dri', 'Pas', 'Tec'])
+    roles['gkd'] = RoleDefinition('gkd', 'GKD', ['Agi', 'Ref'], ['Aer', 'Cmd', 'Cnt', 'Han', 'Kic', 'Pos'], ['1v1', 'Ant', 'Dec', 'Thr'])
+    roles['hbd'] = RoleDefinition('hbd', 'HBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cnt', 'Cmp', 'Dec', 'Mar', 'Pos', 'Tck', 'Tea'], ['Agg', 'Bra', 'Fir', 'Jum', 'Pas', 'Str'])
+    roles['ifa'] = RoleDefinition('ifa', 'IFA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Ant', 'Dri', 'Fin', 'Fir', 'OtB', 'Tec'], ['Bal', 'Cmp', 'Fla', 'Lon', 'Pas'])
+    roles['ifs'] = RoleDefinition('ifs', 'IFS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Dri', 'Fin', 'Fir', 'OtB', 'Tec'], ['Ant', 'Bal', 'Cmp', 'Fla', 'Lon', 'Pas', 'Vis'])
+    roles['ifbd'] = RoleDefinition('ifbd', 'IFBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Hea', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Agi', 'Ant', 'Bra', 'Cnt', 'Cmp', 'Dec', 'Dri', 'Fir', 'Jum', 'Pas', 'Tec'])
+    roles['iwa'] = RoleDefinition('iwa', 'IWA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Cro', 'Dri', 'Pas', 'Tec'], ['Ant', 'Bal', 'Cmp', 'Dec', 'Fir', 'Fla', 'Lon', 'OtB', 'Vis'])
+    roles['iws'] = RoleDefinition('iws', 'IWS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Cro', 'Dri', 'Pas', 'Tec'], ['Bal', 'Cmp', 'Dec', 'Fir', 'Lon', 'OtB', 'Vis'])
+    roles['iwba'] = RoleDefinition('iwba', 'IWBA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tck', 'Tea', 'Tec', 'Vis'], ['Agi', 'Ant', 'Cnt', 'Cro', 'Dri', 'Fla', 'Lon', 'Mar', 'Pos'])
+    roles['iwbd'] = RoleDefinition('iwbd', 'IWBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Dec', 'Pas', 'Pos', 'Tck', 'Tea'], ['Agi', 'Cnt', 'Cmp', 'Fir', 'Mar', 'OtB', 'Tec'])
+    roles['iwbs'] = RoleDefinition('iwbs', 'IWBS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Pas', 'Tck', 'Tea'], ['Agi', 'Ant', 'Cnt', 'Mar', 'OtB', 'Pos', 'Tec', 'Vis'])
+    roles['ld'] = RoleDefinition('ld', 'LD', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Dec', 'Fir', 'Hea', 'Mar', 'Pas', 'Pos', 'Str', 'Tck', 'Tea', 'Tec'], ['Ant', 'Bra', 'Cnt', 'Sta'])
+    roles['ls'] = RoleDefinition('ls', 'LS', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Dec', 'Fir', 'Hea', 'Mar', 'Pas', 'Pos', 'Str', 'Tck', 'Tea', 'Tec'], ['Ant', 'Bra', 'Cnt', 'Dri', 'Sta', 'Vis'])
+    roles['meza'] = RoleDefinition('meza', 'MEZA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'Dri', 'OtB', 'Pas', 'Tec', 'Vis'], ['Ant', 'Bal', 'Cmp', 'Fin', 'Fir', 'Fla', 'Lon'])
+    roles['mezs'] = RoleDefinition('mezs', 'MEZS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'OtB', 'Pas', 'Tec'], ['Ant', 'Bal', 'Cmp', 'Dri', 'Fir', 'Lon', 'Tck', 'Vis'])
+    roles['ncbc'] = RoleDefinition('ncbc', 'NCBC', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Ant', 'Cnt', 'Mar', 'Pos', 'Tck'], ['Bra', 'Hea', 'Str'])
+    roles['ncbd'] = RoleDefinition('ncbd', 'NCBD', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Hea', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Ant', 'Bra', 'Cnt'])
+    roles['ncbs'] = RoleDefinition('ncbs', 'NCBS', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Agg', 'Bra', 'Hea', 'Pos', 'Str', 'Tck'], ['Ant', 'Cnt', 'Mar'])
+    roles['nfbd'] = RoleDefinition('nfbd', 'NFBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Bra', 'Cnt', 'Hea', 'Tea'])
+    roles['pa'] = RoleDefinition('pa', 'PA', ['Acc', 'Fin', 'Pac'], ['Ant', 'Cmp', 'OtB'], ['Dec', 'Fir', 'Hea', 'Tec'])
+    roles['pfa'] = RoleDefinition('pfa', 'PFA', ['Acc', 'Fin', 'Pac'], ['Agg', 'Ant', 'Bra', 'OtB', 'Sta', 'Tea', 'Wor'], ['Agi', 'Bal', 'Cnt', 'Cmp', 'Dec', 'Fir', 'Str'])
+    roles['pfd'] = RoleDefinition('pfd', 'PFD', ['Acc', 'Fin', 'Pac'], ['Agg', 'Ant', 'Bra', 'Dec', 'Sta', 'Tea', 'Wor'], ['Agi', 'Bal', 'Cnt', 'Cmp', 'Fir', 'Str'])
+    roles['pfs'] = RoleDefinition('pfs', 'PFS', ['Acc', 'Fin', 'Pac'], ['Agg', 'Ant', 'Bra', 'Dec', 'Sta', 'Tea', 'Wor'], ['Agi', 'Bal', 'Cnt', 'Cmp', 'Fir', 'OtB', 'Pas', 'Str'])
+    roles['raua'] = RoleDefinition('raua', 'RAUA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Bal', 'Cnt', 'Cmp', 'Dec', 'Fin', 'OtB'], ['Fir', 'Tec'])
+    roles['regs'] = RoleDefinition('regs', 'REGS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Fla', 'OtB', 'Pas', 'Tea', 'Tec', 'Vis'], ['Ant', 'Bal', 'Dri', 'Lon'])
+    roles['rps'] = RoleDefinition('rps', 'RPS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cmp', 'Dec', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec', 'Vis'], ['Agi', 'Bal', 'Cnt', 'Dri', 'Lon', 'Pos'])
+    roles['sva'] = RoleDefinition('sva', 'SVA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Fin', 'Lon', 'OtB', 'Pas', 'Pos', 'Tck'], ['Bal', 'Cnt', 'Cmp', 'Dec', 'Fir', 'Mar'])
+    roles['svs'] = RoleDefinition('svs', 'SVS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Mar', 'OtB', 'Pas', 'Pos', 'Tck'], ['Ant', 'Bal', 'Cnt', 'Cmp', 'Dec', 'Fin', 'Fir', 'Lon', 'Str'])
+    roles['ssa'] = RoleDefinition('ssa', 'SSA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Cmp', 'Dri', 'Fin', 'Fir', 'OtB'], ['Agi', 'Bal', 'Cnt', 'Dec', 'Pas', 'Tec'])
+    roles['ska'] = RoleDefinition('ska', 'SKA', ['Agi', 'Ref'], ['1v1', 'Ant', 'Cmd', 'Cnt', 'Kic', 'Pos'], ['Acc', 'Aer', 'Dec', 'Fir', 'Han', 'Pas', 'TRO', 'Vis'])
+    roles['skd'] = RoleDefinition('skd', 'SKD', ['Agi', 'Ref'], ['1v1', 'Ant', 'Cmd', 'Cnt', 'Kic', 'Pos'], ['Acc', 'Aer', 'Dec', 'Fir', 'Han', 'Pas', 'TRO', 'Vis'])
+    roles['sks'] = RoleDefinition('sks', 'SKS', ['Agi', 'Ref'], ['1v1', 'Ant', 'Cmd', 'Cnt', 'Kic', 'Pos'], ['Acc', 'Aer', 'Dec', 'Fir', 'Han', 'Pas', 'TRO', 'Vis'])
+    roles['tfa'] = RoleDefinition('tfa', 'TFA', ['Acc', 'Fin', 'Pac'], ['Bal', 'Bra', 'Cmp', 'Hea', 'Jum', 'OtB', 'Str'], ['Agg', 'Ant', 'Dec', 'Fir', 'Tea'])
+    roles['tfs'] = RoleDefinition('tfs', 'TFS', ['Acc', 'Fin', 'Pac'], ['Bal', 'Bra', 'Hea', 'Jum', 'Str', 'Tea'], ['Agg', 'Ant', 'Cmp', 'Dec', 'Fir', 'OtB'])
+    roles['trea'] = RoleDefinition('trea', 'TREA', ['Acc', 'Fin', 'Pac'], ['Cmp', 'Dec', 'Dri', 'Fir', 'Fla', 'OtB', 'Pas', 'Tec', 'Vis'], ['Agi', 'Ant', 'Bal'])
+    roles['wcba'] = RoleDefinition('wcba', 'WCBA', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Cro', 'Dri', 'Hea', 'Mar', 'OtB', 'Sta', 'Str', 'Tck'], ['Agg', 'Agi', 'Ant', 'Bra', 'Cnt', 'Dec', 'Fir', 'Pas', 'Pos', 'Tec', 'Wor'])
+    roles['wcbd'] = RoleDefinition('wcbd', 'WCBD', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Hea', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Agi', 'Ant', 'Bra', 'Cnt', 'Dec', 'Dri', 'Fir', 'Pas', 'Tec', 'Wor'])
+    roles['wcbs'] = RoleDefinition('wcbs', 'WCBS', ['Acc', 'Cmp', 'Jum', 'Pac'], ['Dri', 'Hea', 'Mar', 'Pos', 'Str', 'Tck'], ['Agg', 'Agi', 'Ant', 'Bra', 'Cnt', 'Cro', 'Dec', 'Fir', 'OtB', 'Pas', 'Sta', 'Tec', 'Wor'])
+    roles['wma'] = RoleDefinition('wma', 'WMA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'Dec', 'Fir', 'Pas', 'Tea'], ['Ant', 'Cmp', 'OtB', 'Tck', 'Tec', 'Vis'])
+    roles['wmd'] = RoleDefinition('wmd', 'WMD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cnt', 'Dec', 'Pas', 'Pos', 'Tck', 'Tea'], ['Ant', 'Cmp', 'Cro', 'Fir', 'Mar', 'Tec'])
+    roles['wms'] = RoleDefinition('wms', 'WMS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Dec', 'Pas', 'Tck', 'Tea'], ['Ant', 'Cnt', 'Cmp', 'Cro', 'Fir', 'OtB', 'Pos', 'Tec', 'Vis'])
+    roles['wpa'] = RoleDefinition('wpa', 'WPA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Dri', 'Fir', 'OtB', 'Pas', 'Tea', 'Tec', 'Vis'], ['Agi', 'Ant', 'Fla'])
+    roles['wps'] = RoleDefinition('wps', 'WPS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cmp', 'Dec', 'Fir', 'Pas', 'Tea', 'Tec', 'Vis'], ['Agi', 'Dri', 'OtB'])
+    roles['wtfa'] = RoleDefinition('wtfa', 'WTFA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Bra', 'Hea', 'Jum', 'OtB', 'Str'], ['Ant', 'Bal', 'Cro', 'Fin', 'Fir', 'Tea'])
+    roles['wtfs'] = RoleDefinition('wtfs', 'WTFS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Bra', 'Hea', 'Jum', 'Str', 'Tea'], ['Ant', 'Bal', 'Cro', 'Fir', 'OtB'])
+    roles['wa'] = RoleDefinition('wa', 'WA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Cro', 'Dri', 'Tec'], ['Ant', 'Bal', 'Fir', 'Fla', 'OtB', 'Pas'])
+    roles['ws'] = RoleDefinition('ws', 'WS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Agi', 'Cro', 'Dri', 'Tec'], ['Bal', 'Fir', 'OtB', 'Pas'])
+    roles['wba'] = RoleDefinition('wba', 'WBA', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'Dri', 'OtB', 'Tck', 'Tea', 'Tec'], ['Agi', 'Ant', 'Bal', 'Cnt', 'Dec', 'Fir', 'Fla', 'Mar', 'Pas', 'Pos'])
+    roles['wbd'] = RoleDefinition('wbd', 'WBD', ['Acc', 'Pac', 'Sta', 'Wor'], ['Ant', 'Mar', 'Pos', 'Tck', 'Tea'], ['Agi', 'Bal', 'Cnt', 'Cro', 'Dec', 'Dri', 'Fir', 'OtB', 'Pas', 'Tec'])
+    roles['wbs'] = RoleDefinition('wbs', 'WBS', ['Acc', 'Pac', 'Sta', 'Wor'], ['Cro', 'Dri', 'Mar', 'OtB', 'Tck', 'Tea'], ['Agi', 'Ant', 'Bal', 'Cnt', 'Dec', 'Fir', 'Pas', 'Pos', 'Tec'])
+
     return roles
 
 
