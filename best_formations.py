@@ -141,15 +141,17 @@ def run_best_formations():
         print(f"📊 Total Score: {total_score:.2f}")
         print("👥 Selected XI:")
         print("-" * 40)
-        
+        # Table header for clarity
+        print(f"{ 'Position (Role)':20} | { 'Player':20} | Score")
+        print("-" * 40)
         for assignment in corrected_assignments:
             if assignment['player'] and assignment['score'] > 0:
                 position = assignment['position']
                 role = assignment['role']
                 player = assignment['player']
                 score = assignment['score']
-                print(f"{position:8} | {player:20} | {score:.1f}")
-        
+                position_role = f"{position} ({role})"
+                print(f"{position_role:20} | {player:20} | {score:.1f}")
         print("-" * 40)
         assigned_count = len([a for a in corrected_assignments if a['player'] is not None])
         if assigned_count > 0:
