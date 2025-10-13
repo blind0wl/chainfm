@@ -49,8 +49,28 @@ def analyze_formations(formations, players):
             best_score = -1
 
             for player in players:
-                if pos["position"] in player["Pos"]:  # Updated key from 'Position' to 'Pos'
-                    score = float(player.get(pos["role"], 0))  # Ensure score is a float
+                # Player's Pos field can contain multiple comma-separated entries (e.g. 'D (L), M (C)').
+                # Normalize both the formation position and each player position entry for robust matching
+                def normalize_position(s):
+                    if not s:
+                        return ""
+                    # Remove spaces and parentheses, uppercase for case-insensitive compare
+                    return s.replace(' ', '').replace('(', '').replace(')', '').upper()
+
+                form_pos_norm = normalize_position(pos.get("position", ""))
+                player_pos_field = player.get("Pos") or player.get("pos") or player.get("Position") or ""
+                matched = False
+                for ppart in [p.strip() for p in player_pos_field.split(',') if p.strip()]:
+                    if form_pos_norm == normalize_position(ppart):
+                        matched = True
+                        break
+
+                if matched:
+                    # Role columns should exist in player dict; default to 0 if missing
+                    try:
+                        score = float(player.get(pos["role"], 0))
+                    except Exception:
+                        score = 0.0
                     if score > best_score:
                         best_score = score
                         best_player = player
@@ -58,11 +78,11 @@ def analyze_formations(formations, players):
             if best_player:
                 total_score += best_score
                 valid_positions += 1
-                assignments.append({"position": pos["position"], "role": pos["role"], "player": best_player["Player"], "score": best_score})
+                assignments.append({"position": pos["position"], "role": pos["role"], "player": best_player.get("Player") or best_player.get("name"), "score": best_score})
             else:
                 assignments.append({"position": pos["position"], "role": pos["role"], "player": None, "score": 0})
 
-        avg_score = total_score / len(formation["positions"])
+        avg_score = total_score / len(formation["positions"]) if formation["positions"] else 0
         results.append({"formation": formation["name"], "avg_score": avg_score, "total_score": total_score, "valid_positions": valid_positions, "assignments": assignments})
 
     return sorted(results, key=lambda x: x["avg_score"], reverse=True)

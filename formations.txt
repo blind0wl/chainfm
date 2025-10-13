@@ -517,3 +517,16 @@ AM (R) = IFA
 AM (L) = IFA
 ST (C) = AFA
 ST (C) = PFA
+
+41. 4-2-1-1-2 Perfect Stranger
+GK = SKD
+D (L) = IWBA
+D (C) = BPDD
+D (C) = BPDD
+D (R) = FBA
+DM = SVA
+DM = DMS
+M (L) = WS
+AM (R) = IFS
+ST (C) = AFA
+ST (C) = PFS
