@@ -243,7 +243,14 @@ def setup_logging(config: Config = Config):
     # Set up logging format
     formatter = logging.Formatter(log_config['format'])
     
-    # Configure root logger
+    # Configure root logger. Make setup idempotent to avoid duplicate handlers.
+    global _LOGGING_CONFIGURED
+    try:
+        if _LOGGING_CONFIGURED:
+            return
+    except NameError:
+        _LOGGING_CONFIGURED = False
+
     logger = logging.getLogger()
     logger.setLevel(level)
     
@@ -261,6 +268,10 @@ def setup_logging(config: Config = Config):
         except Exception as e:
             print(f"Warning: Could not set up file logging: {e}")
 
+    # Mark logging as configured to prevent duplicate handlers on repeated calls
+    _LOGGING_CONFIGURED = True
 
-# Initialize logging with default configuration
-setup_logging()
+
+# Note: Do not auto-initialize logging at import time. Call setup_logging() from the
+# application entrypoint (e.g. `chainfm.py`) to avoid duplicate handlers when modules
+# import `config`.
