@@ -113,8 +113,11 @@ def run_best_formations(target_formation_substring: str = None):
             if allowed:
                 return pbase in allowed
 
-            # Last resort: accept if player base contains form base or vice versa (e.g., ST vs STC)
-            if fbase in pbase or pbase in fbase:
+            # Last resort: accept only tight suffix matches where one base is the other's base
+            # with a single side char appended (e.g., ST <-> STC, D <-> DL)
+            if (pbase.startswith(fbase) and len(pbase) == len(fbase) + 1 and pbase[-1] in ('L','R','C')):
+                return True
+            if (fbase.startswith(pbase) and len(fbase) == len(pbase) + 1 and fbase[-1] in ('L','R','C')):
                 return True
 
             return False
