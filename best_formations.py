@@ -71,9 +71,63 @@ def run_best_formations(target_formation_substring: str = None):
         eligible_players = []
         # Normalize requested formation position and compare against normalized player positions
         form_pos_norm = normalize_position(position)
+        # Helper: parse a normalized token into (base, side) where side is one of 'L','R','C' or ''
+        def parse_token(tok: str):
+            if not tok:
+                return '', ''
+            side = ''
+            if tok.endswith('L') or tok.endswith('R') or tok.endswith('C'):
+                side = tok[-1]
+                base = tok[:-1]
+            else:
+                base = tok
+            return base, side
+
+        # Compatibility rules: map formation base -> acceptable player bases
+        COMPATIBILITY = {
+            'D': {'D', 'WB', 'LWB', 'RWB', 'CB', 'LB', 'RB'},
+            # allow M positions to cover AM/CM etc.
+            'M': {'M', 'AM', 'CM', 'DM', 'MC'},
+            'ST': {'ST', 'CF', 'F', 'STR'},
+            # fallback: treat equal bases as compatible
+        }
+
+        def is_compatible(form_tok, player_tok):
+            fbase, fside = parse_token(form_tok)
+            pbase, pside = parse_token(player_tok)
+
+            # If either base empty, require direct match
+            if not fbase or not pbase:
+                return form_tok == player_tok
+
+            # If sides are specified and conflict, not compatible
+            if fside and pside and fside != pside:
+                return False
+
+            # Direct base equality
+            if fbase == pbase:
+                return True
+
+            # Check compatibility mapping
+            allowed = COMPATIBILITY.get(fbase)
+            if allowed:
+                return pbase in allowed
+
+            # Last resort: accept if player base contains form base or vice versa (e.g., ST vs STC)
+            if fbase in pbase or pbase in fbase:
+                return True
+
+            return False
+
         for player, positions in player_positions.items():
             if player not in used_players:
-                if form_pos_norm in positions:
+                # check if any of the player's normalized tokens are compatible
+                matched = False
+                for ptok in positions:
+                    if is_compatible(form_pos_norm, ptok):
+                        matched = True
+                        break
+                if matched:
                     try:
                         role_score = float(player_data_dict.get(player, {}).get(role, 0))  # Get the role score, default to 0
                     except Exception:
